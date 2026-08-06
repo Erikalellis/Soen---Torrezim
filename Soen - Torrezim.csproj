@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EFDE25CE-877F-4DB1-BC40-2DE7A48EED6E}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Soen___Torrezim</RootNamespace>
+    <AssemblyName>Soen - Torrezim</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>C:\Users\robso\OneDrive\Área de Trabalho\Erika\Projetos\Rafael\TEste\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ProductName>Soen Radiadores</ProductName>
+    <PublisherName>Erika Lellis</PublisherName>
+    <SuiteName>Soen</SuiteName>
+    <AutorunEnabled>true</AutorunEnabled>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>
+    </ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>Soen___Torrezim.Program</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>DB8A5B6C2211768DF51FA688660A9035A54044CC</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Soen - Torrezim_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AboutBox1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutBox1.Designer.cs">
+      <DependentUpon>AboutBox1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AcompanhamentoS.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AcompanhamentoS.Designer.cs">
+      <DependentUpon>AcompanhamentoS.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AgendamentoServicos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AgendamentoServicos.Designer.cs">
+      <DependentUpon>AgendamentoServicos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AnaliseLucro.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AnaliseLucro.Designer.cs">
+      <DependentUpon>AnaliseLucro.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Atualizar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Atualizar.Designer.cs">
+      <DependentUpon>Atualizar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CadastroCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CadastroCliente.Designer.cs">
+      <DependentUpon>CadastroCliente.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CadastroFornecedor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CadastroFornecedor.Designer.cs">
+      <DependentUpon>CadastroFornecedor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CadastroVeiculo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CadastroVeiculo.Designer.cs">
+      <DependentUpon>CadastroVeiculo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CalendariosAgen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CalendariosAgen.Designer.cs">
+      <DependentUpon>CalendariosAgen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConfirmacaoS.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfirmacaoS.Designer.cs">
+      <DependentUpon>ConfirmacaoS.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConsultaCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConsultaCliente.Designer.cs">
+      <DependentUpon>ConsultaCliente.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ContasPagar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ContasPagar.Designer.cs">
+      <DependentUpon>ContasPagar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ContasReceber.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ContasReceber.Designer.cs">
+      <DependentUpon>ContasReceber.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ControleCaixa.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ControleCaixa.Designer.cs">
+      <DependentUpon>ControleCaixa.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CriacaoOrcamentos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CriacaoOrcamentos.Designer.cs">
+      <DependentUpon>CriacaoOrcamentos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DeepDarkness.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DeepDarkness.Designer.cs">
+      <DependentUpon>DeepDarkness.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DescricaoVeiculo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DescricaoVeiculo.Designer.cs">
+      <DependentUpon>DescricaoVeiculo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EntradaEstoque.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EntradaEstoque.Designer.cs">
+      <DependentUpon>EntradaEstoque.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ErikaLelliscs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErikaLelliscs.Designer.cs">
+      <DependentUpon>ErikaLelliscs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmPrincipal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmPrincipal.Designer.cs">
+      <DependentUpon>FrmPrincipal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GerenciamentoH.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GerenciamentoH.Designer.cs">
+      <DependentUpon>GerenciamentoH.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HistoricoCompraCliente.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HistoricoCompraCliente.Designer.cs">
+      <DependentUpon>HistoricoCompraCliente.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HistoricoManutencao.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HistoricoManutencao.Designer.cs">
+      <DependentUpon>HistoricoManutencao.cs</DependentUpon>
+    </Compile>
+    <Compile Include="IntegraContabil.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="IntegraContabil.Designer.cs">
+      <DependentUpon>IntegraContabil.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InventarioPM.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InventarioPM.Designer.cs">
+      <DependentUpon>InventarioPM.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ManutecaoVeiculo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ManutecaoVeiculo.Designer.cs">
+      <DependentUpon>ManutecaoVeiculo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NotificaoAgen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NotificaoAgen.Designer.cs">
+      <DependentUpon>NotificaoAgen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NotLemb.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NotLemb.Designer.cs">
+      <DependentUpon>NotLemb.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegistroVendas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RegistroVendas.Designer.cs">
+      <DependentUpon>RegistroVendas.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RelatorioAnalise.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioAnalise.Designer.cs">
+      <DependentUpon>RelatorioAnalise.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RelatorioFC.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioFC.Designer.cs">
+      <DependentUpon>RelatorioFC.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RelatorioSP.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioSP.Designer.cs">
+      <DependentUpon>RelatorioSP.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RelatorioVFi.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioVFi.Designer.cs">
+      <DependentUpon>RelatorioVFi.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SaidaEs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SaidaEs.Designer.cs">
+      <DependentUpon>SaidaEs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Soen.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Soen.Designer.cs">
+      <DependentUpon>Soen.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AboutBox1.resx">
+      <DependentUpon>AboutBox1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Atualizar.resx">
+      <DependentUpon>Atualizar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CadastroCliente.resx">
+      <DependentUpon>CadastroCliente.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CadastroVeiculo.resx">
+      <DependentUpon>CadastroVeiculo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DeepDarkness.resx">
+      <DependentUpon>DeepDarkness.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErikaLelliscs.resx">
+      <DependentUpon>ErikaLelliscs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmPrincipal.resx">
+      <DependentUpon>FrmPrincipal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="Soen - Torrezim_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="1562687-code-computer-creative-html-process-technology-web-development_107058.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.7.2 %28x86 e x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
