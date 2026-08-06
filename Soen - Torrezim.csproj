@@ -89,11 +89,17 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\BaseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Common\ComboItems.cs" />
+    <Compile Include="Common\UIHelpers.cs" />
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\ClienteDAO.cs" />
     <Compile Include="Data\VeiculoDAO.cs" />
@@ -101,12 +107,22 @@
     <Compile Include="Data\VendaDAO.cs" />
     <Compile Include="Data\CaixaDAO.cs" />
     <Compile Include="Data\ProdutoDAO.cs" />
+    <Compile Include="Data\ServicoDAO.cs" />
+    <Compile Include="Data\FinanceiroDAO.cs" />
+    <Compile Include="Data\UsuarioDAO.cs" />
+    <Compile Include="Data\EmpresaDAO.cs" />
     <Compile Include="Models\Cliente.cs" />
+    <Compile Include="Models\Servico.cs" />
+    <Compile Include="Models\Financeiro.cs" />
     <Compile Include="Models\Veiculo.cs" />
     <Compile Include="Models\Manutencao.cs" />
     <Compile Include="Models\Venda.cs" />
     <Compile Include="Models\Caixa.cs" />
     <Compile Include="Models\Produto.cs" />
+    <Compile Include="Models\Usuario.cs" />
+    <Compile Include="Models\Empresa.cs" />
+    <Compile Include="Validacoes.cs" />
+    <Compile Include="RelatorioHelper.cs" />
     <Compile Include="AboutBox1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -148,6 +164,36 @@
     </Compile>
     <Compile Include="CadastroFornecedor.Designer.cs">
       <DependentUpon>CadastroFornecedor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CadastroServico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CadastroServico.Designer.cs">
+      <DependentUpon>CadastroServico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BackupRestore.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BackupRestore.Designer.cs">
+      <DependentUpon>BackupRestore.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Login.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Login.Designer.cs">
+      <DependentUpon>Login.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Usuarios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Usuarios.Designer.cs">
+      <DependentUpon>Usuarios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EmpresaConfig.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EmpresaConfig.Designer.cs">
+      <DependentUpon>EmpresaConfig.cs</DependentUpon>
     </Compile>
     <Compile Include="CadastroVeiculo.cs">
       <SubType>Form</SubType>
@@ -226,12 +272,6 @@
     </Compile>
     <Compile Include="FrmPrincipal.Designer.cs">
       <DependentUpon>FrmPrincipal.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Form2.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form2.Designer.cs">
-      <DependentUpon>Form2.cs</DependentUpon>
     </Compile>
     <Compile Include="GerenciamentoH.cs">
       <SubType>Form</SubType>
@@ -319,12 +359,6 @@
     <Compile Include="SaidaEs.Designer.cs">
       <DependentUpon>SaidaEs.cs</DependentUpon>
     </Compile>
-    <Compile Include="Soen.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Soen.Designer.cs">
-      <DependentUpon>Soen.cs</DependentUpon>
-    </Compile>
     <EmbeddedResource Include="AboutBox1.resx">
       <DependentUpon>AboutBox1.cs</DependentUpon>
     </EmbeddedResource>
@@ -346,6 +380,9 @@
     <EmbeddedResource Include="FrmPrincipal.resx">
       <DependentUpon>FrmPrincipal.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Login.resx">
+      <DependentUpon>Login.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -355,6 +392,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Common\README_UI_PATCH.md" />
+    <None Include="Common\UI_Audit_Report.md" />
+    <None Include="Common\UI_Audit_Report_Detailed.md" />
+    <None Include="Common\UI_Handler_Report.md" />
+    <None Include="Common\UI_Manual_Adjustments_Checklist.md" />
+    <None Include="CONTRIBUTING_UI.md" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -7,7 +7,7 @@ using Soen___Torrezim.Models;
 
 namespace Soen___Torrezim
 {
-    public partial class CadastroVeiculo : Form
+    public partial class CadastroVeiculo : BaseForm
     {
         private ComboBox cmbClientes; // dono do veículo (seletor adicionado em tempo de execução)
 
@@ -16,6 +16,7 @@ namespace Soen___Torrezim
             InitializeComponent();
             CriarSeletorCliente();
             this.button1.Click += new EventHandler(this.button1_Click);
+            textBox1.TextChanged += (s, e) => Validacoes.AplicarMascaraPlaca(textBox1);
         }
 
         // Adiciona o campo "Cliente (dono)" no formulário.
@@ -72,12 +73,21 @@ namespace Soen___Torrezim
                 return;
             }
 
+            string placa = Validacoes.SoDigitos(textBox1.Text);
+            if (placa.Length == 0)
+            {
+                MessageBox.Show("Informe a placa do veículo.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox1.Focus();
+                return;
+            }
+
             try
             {
                 var veiculo = new Veiculo
                 {
                     ClienteId   = dono.Id,
-                    Placa       = textBox1.Text.Trim(),                    // Placa
+                    Placa       = textBox1.Text.Trim().ToUpper(),          // Placa
                     Marca       = (comboBox1.SelectedItem ?? "").ToString(), // Marca
                     Modelo      = comboBox2.Text.Trim(),                    // Modelo
                     Cor         = textBox4.Text.Trim(),                     // Cor
@@ -111,15 +121,4 @@ namespace Soen___Torrezim
         }
     }
 
-    // Item auxiliar para o ComboBox de clientes (guarda o Id e mostra o nome).
-    public class ComboCliente
-    {
-        public long Id { get; set; }
-        public string Nome { get; set; }
-
-        public override string ToString()
-        {
-            return Nome;
-        }
     }
-}

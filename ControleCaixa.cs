@@ -49,7 +49,7 @@ namespace Soen___Torrezim
             var lblValor = new Label { Text = "Valor (R$):", AutoSize = true, Location = new Point(460, 20) };
             txtValor = new TextBox { Location = new Point(530, 17), Size = new Size(90, 20) };
 
-            btnLancar = new Button { Text = "Lançar", Location = new Point(630, 13), Size = new Size(100, 26), BackColor = SystemColors.AppWorkspace };
+            btnLancar = UIHelpers.CreateButton("Lançar", new Point(630, 13), new Size(100, 26));
             btnLancar.Click += (s, e) => Lancar();
 
             grid = new DataGridView
@@ -71,7 +71,7 @@ namespace Soen___Torrezim
             grid.Columns.Add("Valor", "Valor (R$)");
             grid.Columns["Descricao"].FillWeight = 4f;
 
-            btnExcluir = new Button { Text = "Excluir Selecionado", Location = new Point(612, 400), Size = new Size(136, 26), BackColor = SystemColors.AppWorkspace };
+            btnExcluir = UIHelpers.CreateButton("Excluir Selecionado", new Point(612, 400), new Size(136, 26));
             btnExcluir.Click += (s, e) => Excluir();
 
             lblSaldo = new Label

@@ -13,7 +13,7 @@ namespace Soen___Torrezim
     /// (descrição + quantidade + valor unitário), calcula o total e salva.
     /// Ao salvar, a venda entra automaticamente no caixa como entrada.
     /// </summary>
-    public partial class RegistroVendas : Form
+    public partial class RegistroVendas : BaseForm
     {
         private ComboBox cmbCliente;
         private ComboBox cmbVeiculo;
@@ -46,6 +46,7 @@ namespace Soen___Torrezim
             CriarInterface();
             CarregarClientes();
             CarregarVendas();
+            txtValorUnit.TextChanged += (s, e) => Validacoes.AplicarMascaraValor(txtValorUnit);
         }
 
         private void CriarInterface()
@@ -124,17 +125,15 @@ namespace Soen___Torrezim
             btnExcluir = new Button { Text = "Excluir Selecionada", Location = new Point(760, y + 185), Size = new Size(120, 26), BackColor = SystemColors.AppWorkspace };
             btnExcluir.Click += (s, e) => ExcluirVenda();
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 598);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] {
                 lblCli, cmbCliente, lblVeic, cmbVeiculo,
                 lblItem, txtItem, lblQtd, txtQtd, lblVu, txtValorUnit, btnAdicionar,
                 gridItens, btnRemoverItem, lblTotal, txtTotal,
                 lblForma, cmbForma, btnSalvar, btnNovo,
-                lblHist, gridVendas, btnExcluir, statusBar
+                lblHist, gridVendas, btnExcluir
             });
         }
 
@@ -170,7 +169,7 @@ namespace Soen___Torrezim
             if (dono == null) return;
             foreach (Veiculo v in VeiculoDAO.Listar(dono.Id))
             {
-                cmbVeiculo.Items.Add(v);
+                cmbVeiculo.Items.Add(new ComboVeiculo { Veiculo = v });
             }
             if (cmbVeiculo.Items.Count > 0) cmbVeiculo.SelectedIndex = 0;
         }
@@ -231,7 +230,7 @@ namespace Soen___Torrezim
                     Id = _vendaId ?? 0,
                     Data = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
                     ClienteId = dono.Id,
-                    VeiculoId = (cmbVeiculo.SelectedItem as Veiculo)?.Id,
+                    VeiculoId = (cmbVeiculo.SelectedItem as ComboVeiculo)?.Veiculo.Id,
                     ValorTotal = total,
                     FormaPagamento = cmbForma.SelectedItem?.ToString() ?? "",
                     Itens = new List<VendaItem>(itensAtuais)
@@ -281,8 +280,8 @@ namespace Soen___Torrezim
             if (!id.HasValue) return;
             for (int i = 0; i < cmbVeiculo.Items.Count; i++)
             {
-                var v = cmbVeiculo.Items[i] as Veiculo;
-                if (v != null && v.Id == id.Value) { cmbVeiculo.SelectedIndex = i; return; }
+                var v = cmbVeiculo.Items[i] as ComboVeiculo;
+                if (v != null && v.Veiculo.Id == id.Value) { cmbVeiculo.SelectedIndex = i; return; }
             }
         }
 

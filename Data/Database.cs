@@ -40,6 +40,38 @@ namespace Soen___Torrezim.Data
                     cmd.CommandText = ScriptTabelas;
                     cmd.ExecuteNonQuery();
                 }
+                Migrar(conn);
+            }
+        }
+
+        /// <summary>Migrações leves para bancos criados em versões anteriores.</summary>
+        private static void Migrar(SQLiteConnection conn)
+        {
+            AdicionarColunaSeFaltar(conn, "orcamentos", "tipo", "TEXT DEFAULT 'orcamento'");
+            AdicionarColunaSeFaltar(conn, "orcamentos", "numero", "TEXT");
+            AdicionarColunaSeFaltar(conn, "orcamentos", "tecnico_id", "INTEGER");
+            AdicionarColunaSeFaltar(conn, "orcamentos", "comissao", "REAL DEFAULT 0");
+            AdicionarColunaSeFaltar(conn, "veiculos", "quilometragem", "REAL DEFAULT 0");
+            AdicionarColunaSeFaltar(conn, "veiculos", "proxima_revisao", "TEXT");
+        }
+
+        private static void AdicionarColunaSeFaltar(SQLiteConnection conn, string tabela, string coluna, string definicao)
+        {
+            bool existe = false;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(" + tabela + ")";
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    while (leitor.Read())
+                        if (string.Equals(leitor.GetString(1), coluna, StringComparison.OrdinalIgnoreCase)) { existe = true; break; }
+                }
+            }
+            if (existe) return;
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "ALTER TABLE " + tabela + " ADD COLUMN " + coluna + " " + definicao;
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -91,13 +123,14 @@ CREATE TABLE IF NOT EXISTS clientes (
 
 CREATE TABLE IF NOT EXISTS veiculos (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    cliente_id  INTEGER NOT NULL REFERENCES clientes(id),
+    cliente_id  INTEGER REFERENCES clientes(id),
     placa       TEXT,
     marca       TEXT,
     modelo      TEXT,
     cor         TEXT,
     observacoes TEXT,
-    criado_em   TEXT DEFAULT (datetime('now','localtime'))
+    quilometragem REAL DEFAULT 0,
+    proxima_revisao TEXT
 );
 
 CREATE TABLE IF NOT EXISTS manutencoes (
@@ -154,6 +187,87 @@ CREATE TABLE IF NOT EXISTS movimentacao_estoque (
     quantidade  REAL NOT NULL,
     data        TEXT DEFAULT (datetime('now','localtime')),
     documento   TEXT
+);
+
+CREATE TABLE IF NOT EXISTS servicos (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome        TEXT NOT NULL,
+    descricao   TEXT,
+    preco       REAL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS agendamentos (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    cliente_id  INTEGER REFERENCES clientes(id),
+    veiculo_id  INTEGER REFERENCES veiculos(id),
+    servico_id  INTEGER REFERENCES servicos(id),
+    data_hora   TEXT,
+    status      TEXT DEFAULT 'agendado', -- agendado | confirmado | concluido | cancelado
+    observacoes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS orcamentos (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    data       TEXT DEFAULT (datetime('now','localtime')),
+    cliente_id INTEGER REFERENCES clientes(id),
+    veiculo_id INTEGER REFERENCES veiculos(id),
+    servico    TEXT,
+    valor      REAL DEFAULT 0,
+    status     TEXT DEFAULT 'em_aberto', -- em_aberto | aprovado | recusado | convertido
+    tipo       TEXT DEFAULT 'orcamento', -- orcamento (sem compromisso) | nota (Nota de Serviço / OS)
+    numero     TEXT,
+    tecnico_id INTEGER REFERENCES tecnicos(id),
+    comissao   REAL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS orcamento_itens (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    orcamento_id INTEGER NOT NULL REFERENCES orcamentos(id),
+    descricao    TEXT,
+    quantidade   REAL DEFAULT 1,
+    valor_unit   REAL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS financeiro (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo         TEXT NOT NULL,            -- 'pagar' | 'receber'
+    descricao    TEXT,
+    fornecedor   TEXT,
+    vencimento   TEXT,
+    valor        REAL DEFAULT 0,
+    status       TEXT DEFAULT 'em_aberto', -- em_aberto | pago | cancelado
+    criado_em    TEXT DEFAULT (datetime('now','localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario  TEXT NOT NULL UNIQUE,
+    senha    TEXT NOT NULL,                -- hash SHA-256
+    nome     TEXT,
+    perfil   TEXT DEFAULT 'operador',      -- admin | operador
+    ativo    INTEGER DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS empresa (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome      TEXT,
+    cnpj      TEXT,
+    telefone  TEXT,
+    endereco  TEXT,
+    cidade    TEXT,
+    estado    TEXT,
+    email     TEXT,
+    site      TEXT,
+    observacoes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS tecnicos (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome       TEXT NOT NULL,
+    telefone   TEXT,
+    cargo      TEXT,
+    comissao_percent REAL DEFAULT 0,
+    ativo      INTEGER DEFAULT 1
 );
 ";
             }

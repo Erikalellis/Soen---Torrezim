@@ -6,7 +6,7 @@ using Soen___Torrezim.Models;
 
 namespace Soen___Torrezim
 {
-    public partial class CadastroCliente : Form
+    public partial class CadastroCliente : BaseForm
     {
         // Converte o nome completo de um estado (Item do comboBox) para a sigla UF.
         private static readonly Dictionary<string, string> EstadosUf = new Dictionary<string, string>
@@ -25,6 +25,10 @@ namespace Soen___Torrezim
             InitializeComponent();
             // Conecta o botão "Salvar" ao método que grava no banco.
             this.button1.Click += new EventHandler(this.button1_Click);
+            textBox1.TextChanged += (s, e) => Validacoes.AplicarMascaraCpfCnpj(textBox1);
+            textBox13.TextChanged += (s, e) => Validacoes.AplicarMascaraTelefone(textBox13);
+            textBox14.TextChanged += (s, e) => Validacoes.AplicarMascaraTelefone(textBox14);
+            textBox5.TextChanged += (s, e) => Validacoes.AplicarMascaraCep(textBox5);
         }
 
         // Abre o cadastro já preenchido com um cliente existente (modo edição).
@@ -95,6 +99,20 @@ namespace Soen___Torrezim
                 return;
             }
 
+            string cpfCnpj = Validacoes.SoDigitos(textBox1.Text);
+            if (cpfCnpj.Length > 0)
+            {
+                bool valido = cpfCnpj.Length == 11 ? Validacoes.CpfValido(cpfCnpj)
+                                                   : cpfCnpj.Length == 14 && Validacoes.CnpjValido(cpfCnpj);
+                if (!valido)
+                {
+                    MessageBox.Show("CPF/CNPJ inválido. Verifique os números digitados.", "Atenção",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBox1.Focus();
+                    return;
+                }
+            }
+
             try
             {
                 var cliente = new Cliente
@@ -153,6 +171,11 @@ namespace Soen___Torrezim
             Text = "Soen - Cadastro de Clientes";
             label2.Text = "Cadastro de Clientes";
             textBox2.Focus();
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

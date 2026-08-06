@@ -85,15 +85,16 @@ namespace Soen___Torrezim
             cmbVeiculo.SelectedIndex = -1;
             foreach (Veiculo v in VeiculoDAO.Listar(null))
             {
-                cmbVeiculo.Items.Add(v);
+                cmbVeiculo.Items.Add(new ComboVeiculo { Veiculo = v });
             }
             if (cmbVeiculo.Items.Count > 0) cmbVeiculo.SelectedIndex = 0;
         }
 
         private void ExibirDetalhes()
         {
-            var v = cmbVeiculo.SelectedItem as Veiculo;
-            if (v == null) return;
+            var cv = cmbVeiculo.SelectedItem as ComboVeiculo;
+            if (cv == null) return;
+            var v = cv.Veiculo;
 
             txtPlaca.Text = v.Placa;
             txtMarca.Text = v.Marca;

@@ -12,6 +12,8 @@ namespace Soen___Torrezim.Models
         public string Modelo { get; set; }
         public string Cor { get; set; }
         public string Observacoes { get; set; }
+        public double Quilometragem { get; set; }
+        public string ProximaRevisao { get; set; }
 
         // Auxiliar para exibição (nome do dono) — preenchido pela tela/consulta.
         public string NomeCliente { get; set; }

@@ -17,14 +17,14 @@ namespace Soen___Torrezim.Data
                 {
                     cmd.CommandText = @"UPDATE veiculos SET
     cliente_id = @cliente, placa = @placa, marca = @marca, modelo = @modelo,
-    cor = @cor, observacoes = @obs
+    cor = @cor, observacoes = @obs, quilometragem = @km, proxima_revisao = @rev
 WHERE id = @id";
                     cmd.Parameters.AddWithValue("@id", v.Id);
                 }
                 else
                 {
-                    cmd.CommandText = @"INSERT INTO veiculos (cliente_id, placa, marca, modelo, cor, observacoes)
-VALUES (@cliente, @placa, @marca, @modelo, @cor, @obs)";
+                    cmd.CommandText = @"INSERT INTO veiculos (cliente_id, placa, marca, modelo, cor, observacoes, quilometragem, proxima_revisao)
+VALUES (@cliente, @placa, @marca, @modelo, @cor, @obs, @km, @rev)";
                 }
 
                 cmd.Parameters.AddWithValue("@cliente", v.ClienteId);
@@ -33,6 +33,8 @@ VALUES (@cliente, @placa, @marca, @modelo, @cor, @obs)";
                 cmd.Parameters.AddWithValue("@modelo", Database.Nulo(v.Modelo));
                 cmd.Parameters.AddWithValue("@cor", Database.Nulo(v.Cor));
                 cmd.Parameters.AddWithValue("@obs", Database.Nulo(v.Observacoes));
+                cmd.Parameters.AddWithValue("@km", v.Quilometragem);
+                cmd.Parameters.AddWithValue("@rev", Database.Nulo(v.ProximaRevisao));
 
                 cmd.ExecuteNonQuery();
 
@@ -106,7 +108,7 @@ FROM veiculos v LEFT JOIN clientes c ON c.id = v.cliente_id WHERE 1=1";
 
         private static Veiculo LerLinha(SQLiteDataReader r)
         {
-            return new Veiculo
+            var v = new Veiculo
             {
                 Id          = r.GetInt64(r.GetOrdinal("id")),
                 ClienteId   = r.GetInt64(r.GetOrdinal("cliente_id")),
@@ -117,6 +119,11 @@ FROM veiculos v LEFT JOIN clientes c ON c.id = v.cliente_id WHERE 1=1";
                 Observacoes = LerString(r, "observacoes"),
                 NomeCliente = LerString(r, "nome_cliente")
             };
+            int idx;
+            idx = r.GetOrdinal("quilometragem");
+            if (!r.IsDBNull(idx)) v.Quilometragem = r.GetDouble(idx);
+            v.ProximaRevisao = LerString(r, "proxima_revisao");
+            return v;
         }
 
         private static string LerString(SQLiteDataReader r, string coluna)

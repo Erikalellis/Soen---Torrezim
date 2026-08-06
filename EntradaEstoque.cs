@@ -141,11 +141,4 @@ WHERE m.tipo='entrada' ORDER BY m.id DESC";
         }
     }
 
-    public class ComboProduto
-    {
-        public long Id { get; set; }
-        public string Nome { get; set; }
-        public double Qtd { get; set; }
-        public override string ToString() { return Nome; }
     }
-}

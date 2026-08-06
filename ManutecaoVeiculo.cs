@@ -12,7 +12,7 @@ namespace Soen___Torrezim
     /// Gestão de manutenções: escolhe o veículo, registra uma manutenção
     /// e acompanha o histórico (aberta / concluída / cancelada).
     /// </summary>
-    public partial class ManutecaoVeiculo : Form
+    public partial class ManutecaoVeiculo : BaseForm
     {
         private ComboBox cmbVeiculo;
         private DateTimePicker dtpData;
@@ -28,7 +28,7 @@ namespace Soen___Torrezim
 
         private long? VeiculoSelecionado
         {
-            get { return (cmbVeiculo.SelectedItem as ComboVeiculo)?.Id; }
+            get { return (cmbVeiculo.SelectedItem as ComboVeiculoItem)?.Id; }
         }
 
         public ManutecaoVeiculo()
@@ -97,16 +97,15 @@ namespace Soen___Torrezim
             grid.Columns["Data"].FillWeight = 1f;
             grid.Columns["Status"].FillWeight = 1.2f;
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 498);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] {
                 lblVeiculo, cmbVeiculo, lblData, dtpData, lblDesc, txtDescricao,
                 lblValor, txtValor, lblStatus2, cmbStatus,
-                btnSalvar, btnConcluir, btnExcluir, grid, statusBar
+                btnSalvar, btnConcluir, btnExcluir, grid
             });
+            // BaseForm já adicionou o StatusStrip ao Controls no construtor.
         }
 
         private void CarregarVeiculos()
@@ -117,7 +116,7 @@ namespace Soen___Torrezim
             {
                 string rotulo = v.Placa + " - " + v.Marca + " " + v.Modelo;
                 if (!string.IsNullOrEmpty(v.NomeCliente)) rotulo += " (" + v.NomeCliente + ")";
-                cmbVeiculo.Items.Add(new ComboVeiculo { Id = v.Id, Rotulo = rotulo });
+                cmbVeiculo.Items.Add(new ComboVeiculoItem { Id = v.Id, Rotulo = rotulo });
             }
             if (cmbVeiculo.Items.Count > 0) cmbVeiculo.SelectedIndex = 0;
         }
@@ -215,10 +214,4 @@ namespace Soen___Torrezim
         }
     }
 
-    public class ComboVeiculo
-    {
-        public long Id { get; set; }
-        public string Rotulo { get; set; }
-        public override string ToString() { return Rotulo; }
     }
-}

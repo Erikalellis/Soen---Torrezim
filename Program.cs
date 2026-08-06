@@ -1,21 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Soen___Torrezim.Data;
 
 namespace Soen___Torrezim
 {
     static class Program
     {
-        /// <summary>
-        /// Ponto de entrada principal para o aplicativo.
-        /// </summary>
+        /// <summary>Ponto de entrada principal para o aplicativo.</summary>
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            Database.Inicializar();
+            UsuarioDAO.GarantirAdminPadrao();
+
+            using (var login = new Login())
+            {
+                if (login.ShowDialog() != DialogResult.OK)
+                    return; // usuário cancelou ou não autenticou
+            }
+
             Application.Run(new FrmPrincipal());
         }
     }
