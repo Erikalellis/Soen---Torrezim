@@ -88,6 +88,27 @@ CREATE TABLE IF NOT EXISTS clientes (
     funcao        TEXT,
     criado_em     TEXT    DEFAULT (datetime('now','localtime'))
 );
+
+CREATE TABLE IF NOT EXISTS veiculos (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    cliente_id  INTEGER NOT NULL REFERENCES clientes(id),
+    placa       TEXT,
+    marca       TEXT,
+    modelo      TEXT,
+    cor         TEXT,
+    observacoes TEXT,
+    criado_em   TEXT DEFAULT (datetime('now','localtime'))
+);
+
+CREATE TABLE IF NOT EXISTS manutencoes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    veiculo_id  INTEGER REFERENCES veiculos(id),
+    cliente_id  INTEGER REFERENCES clientes(id),
+    data        TEXT,
+    descricao   TEXT,
+    valor       REAL,
+    status      TEXT DEFAULT 'aberta'
+);
 ";
             }
         }
