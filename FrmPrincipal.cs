@@ -37,12 +37,14 @@ namespace Soen___Torrezim
 
         private void ediçãoDeDadosDosClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            ConsultaCliente formConsultaClientes = new ConsultaCliente();
+            formConsultaClientes.Show();
         }
 
         private void exclusãoDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            ConsultaCliente formConsultaClientes = new ConsultaCliente();
+            formConsultaClientes.Show();
         }
 
         private void históricoDeComprasDosClientesToolStripMenuItem_Click(object sender, EventArgs e)

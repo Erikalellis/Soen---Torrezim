@@ -27,6 +27,13 @@ namespace Soen___Torrezim
             this.button1.Click += new EventHandler(this.button1_Click);
         }
 
+        // Abre o cadastro já preenchido com um cliente existente (modo edição).
+        public CadastroCliente(Cliente cliente)
+            : this()
+        {
+            Preencher(cliente);
+        }
+
         private void label10_Click(object sender, EventArgs e) { }
 
         private void label13_Click(object sender, EventArgs e) { }
@@ -36,6 +43,46 @@ namespace Soen___Torrezim
         private void button2_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private Cliente _cliente; // não-nulo = modo edição
+
+        private void Preencher(Cliente c)
+        {
+            _cliente = c;
+            textBox1.Text = c.CpfCnpj;      // CPF/CNPJ
+            textBox2.Text = c.NomeRazao;      // Nome
+            textBox4.Text = c.Sexo;           // Sexo
+            textBox5.Text = c.Cep;            // CEP
+            textBox6.Text = c.Endereco;       // Endereço
+            textBox7.Text = c.Bairro;         // Bairro
+            textBox8.Text = c.Nascimento;     // Nascimento
+            textBox9.Text = c.Responsavel;    // Responsável
+            textBox10.Text = c.Funcao;        // Função
+            textBox11.Text = c.Complemento;   // Complemento
+            textBox12.Text = c.Cidade;        // Cidade
+            textBox13.Text = c.Fone1;         // Telefone 1
+            textBox14.Text = c.Fone2;         // Telefone 2
+            textBox15.Text = c.Email1;        // Email 1
+            textBox16.Text = c.Email2;        // Email 2
+            SelecionarEstado(c.Estado);
+            Text = "Soen - Edição de Cadastro de Clientes";
+            label2.Text = "Edição de Cadastro de Clientes";
+        }
+
+        private void SelecionarEstado(string uf)
+        {
+            if (string.IsNullOrWhiteSpace(uf)) return;
+            for (int i = 0; i < comboBox1.Items.Count; i++)
+            {
+                string nome = comboBox1.Items[i].ToString();
+                string sigla;
+                if (EstadosUf.TryGetValue(nome, out sigla) && sigla == uf)
+                {
+                    comboBox1.SelectedIndex = i;
+                    return;
+                }
+            }
         }
 
         // ===== Salvar no banco =====
@@ -52,6 +99,7 @@ namespace Soen___Torrezim
             {
                 var cliente = new Cliente
                 {
+                    Id          = _cliente != null ? _cliente.Id : 0,
                     Tipo        = "cliente",
                     CpfCnpj     = textBox1.Text.Trim(),
                     NomeRazao   = textBox2.Text.Trim(),
@@ -73,8 +121,10 @@ namespace Soen___Torrezim
 
                 ClienteDAO.Salvar(cliente);
 
-                MessageBox.Show("Cliente salvo com sucesso!", "SOEN",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(_cliente != null
+                    ? "Cadastro atualizado com sucesso!"
+                    : "Cliente salvo com sucesso!",
+                    "SOEN", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 LimparCampos();
             }
@@ -99,6 +149,9 @@ namespace Soen___Torrezim
             textBox10.Clear(); textBox11.Clear(); textBox12.Clear(); textBox13.Clear();
             textBox14.Clear(); textBox15.Clear(); textBox16.Clear();
             comboBox1.SelectedIndex = -1;
+            _cliente = null;
+            Text = "Soen - Cadastro de Clientes";
+            label2.Text = "Cadastro de Clientes";
             textBox2.Focus();
         }
     }

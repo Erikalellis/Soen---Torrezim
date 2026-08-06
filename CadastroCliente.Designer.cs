@@ -385,26 +385,7 @@
             "Santa Catarina",
             "São Paulo",
             "Sergipe",
-            "Tocantins",
-            " e Osasco...kkkkkk",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "esqueci que ",
-            "osasco nao",
-            "é estado e",
-            " sim um ",
-            "Pais...kkkkkkkkkkkkk"});
+            "Tocantins"});
             this.comboBox1.Location = new System.Drawing.Point(460, 143);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(121, 21);
@@ -446,6 +427,7 @@
             this.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.ClientSize = new System.Drawing.Size(807, 388);
+            this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.comboBox1);
@@ -482,7 +464,6 @@
             this.Controls.Add(this.LabelSexo);
             this.Controls.Add(this.LabelNomeRacao);
             this.Controls.Add(this.LabelCpfCnpj);
-            this.Controls.Add(this.pictureBox1);
             this.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
