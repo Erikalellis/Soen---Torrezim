@@ -100,11 +100,13 @@
     <Compile Include="Data\ManutencaoDAO.cs" />
     <Compile Include="Data\VendaDAO.cs" />
     <Compile Include="Data\CaixaDAO.cs" />
+    <Compile Include="Data\ProdutoDAO.cs" />
     <Compile Include="Models\Cliente.cs" />
     <Compile Include="Models\Veiculo.cs" />
     <Compile Include="Models\Manutencao.cs" />
     <Compile Include="Models\Venda.cs" />
     <Compile Include="Models\Caixa.cs" />
+    <Compile Include="Models\Produto.cs" />
     <Compile Include="AboutBox1.cs">
       <SubType>Form</SubType>
     </Compile>

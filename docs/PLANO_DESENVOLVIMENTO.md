@@ -24,11 +24,11 @@ depois que a anterior estiver funcionando e atualizada nos documentos.
 - [x] Controle de Caixa (venda gera entrada automaticamente + lançamentos manuais + saldo)
 - [ ] Análise de margem de lucro (próximo)
 
-## Fase 4 — Estoque
-- [ ] Cadastro de produtos/peças
-- [ ] Entrada de Estoque
-- [ ] Saída de Estoque
-- [ ] Inventário
+## Fase 4 — Estoque (concluída ✔)
+- [x] Cadastro de produtos/peças (inventário)
+- [x] Entrada de Estoque
+- [x] Saída de Estoque (com validação de saldo)
+- [x] Inventário
 
 ## Fase 5 — Serviços, Orçamentos e Agendamentos
 - [ ] Catálogo de Serviços

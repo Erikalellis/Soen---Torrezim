@@ -80,6 +80,9 @@ Marque com ✔️ quando a tela estiver funcional.
 | DescricaoVeiculo | CONSULTAS | ✔️ | ✔️ funcional |
 | RegistroVendas | OPERAÇÃO | ✔️ | ✔️ funcional |
 | ControleCaixa | FINANCEIRO | ✔️ | ✔️ funcional |
+| InventarioPM | CONSULTAS | ✔️ | ✔️ funcional |
+| EntradaEstoque | OPERAÇÃO | ✔️ | ✔️ funcional |
+| SaidaEs | OPERAÇÃO | ✔️ | ✔️ funcional |
 | CadastroFornecedor | CADASTROS | ⬜ | ⬜ |
 | ContasPagar/ContasReceber | FINANCEIRO | ⬜ | ⬜ |
 | RegistroVendas | OPERAÇÃO | ⬜ | ⬜ |

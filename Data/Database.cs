@@ -135,6 +135,26 @@ CREATE TABLE IF NOT EXISTS caixa (
     descricao TEXT,
     valor     REAL NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS produtos (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    codigo    TEXT,
+    nome      TEXT NOT NULL,
+    categoria TEXT,
+    unidade   TEXT DEFAULT 'un',
+    qtd_atual REAL DEFAULT 0,
+    custo     REAL DEFAULT 0,
+    preco     REAL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS movimentacao_estoque (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    produto_id  INTEGER NOT NULL REFERENCES produtos(id),
+    tipo        TEXT NOT NULL,        -- 'entrada' | 'saida'
+    quantidade  REAL NOT NULL,
+    data        TEXT DEFAULT (datetime('now','localtime')),
+    documento   TEXT
+);
 ";
             }
         }
