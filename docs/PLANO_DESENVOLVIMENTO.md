@@ -10,8 +10,8 @@ depois que a anterior estiver funcionando e atualizada nos documentos.
 - [x] Criar banco SQLite + helper `Database.cs` (cria arquivo e tabelas no 1º uso)
 - [x] Criar padrão de modelo + DAO para Cliente
 - [x] CadastroCliente salvar de verdade (gravar no banco)
-- [ ] Consulta de Clientes (listar com DataGridView)
-- [ ] Edição e exclusão de Clientes
+- [x] Consulta de Clientes (listar com DataGridView)
+- [x] Edição e exclusão de Clientes
 - [x] Atualizar `docs/BANCO_DE_DADOS.md` e `docs/MAPA_MENU.md`
 
 ## Fase 2 — Veículos
