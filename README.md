@@ -4,12 +4,13 @@ Sistema de gestão para oficina de radiadores (SOEN). Desenvolvido em **C# WinFo
 
 > Primeiro projeto desenvolvido do zero pelo autor. Documentação completa na pasta `docs/` — sempre consultar antes de mudar o código.
 
-## Status atual
+## Status
 
 - ✅ Esqueleto de interface com menu principal
-- ✅ Tela de Cadastro de Clientes (layout) e Cadastro de Veículos (layout)
-- ⬜ Sem banco de dados ainda (próximo passo)
-- ⬜ Módulos funcionais em desenvolvimento
+- ✅ SQLite (banco local) + padrão DAO implementado
+- ✅ Cadastro de Clientes salvando no banco
+- ✏️ Consulta de Clientes em desenvolvimento
+- ⬜ Demais módulos em desenvolvimento
 
 ## Estrutura de pastas
 

@@ -3,16 +3,16 @@
 Roteiro do sistema SOEN por fases. **Regra de ouro:** só passar para a fase seguinte
 depois que a anterior estiver funcionando e atualizada nos documentos.
 
-## Fase 1 — Fundação (em andamento)
+## Fase 1 — Fundação (concluída ✔)
 - [x] Backup inicial no git
 - [x] Estrutura de documentação criada
 - [x] Mapa de menus reorganizado
-- [ ] Criar banco SQLite + helper `Database.cs` (cria arquivo e tabelas no 1º uso)
-- [ ] Criar padrão de modelo + DAO para Cliente
-- [ ] CadastroCliente salvar de verdade (gravar no banco)
+- [x] Criar banco SQLite + helper `Database.cs` (cria arquivo e tabelas no 1º uso)
+- [x] Criar padrão de modelo + DAO para Cliente
+- [x] CadastroCliente salvar de verdade (gravar no banco)
 - [ ] Consulta de Clientes (listar com DataGridView)
 - [ ] Edição e exclusão de Clientes
-- [ ] Atualizar `docs/BANCO_DE_DADOS.md` e `docs/MAPA_MENU.md`
+- [x] Atualizar `docs/BANCO_DE_DADOS.md` e `docs/MAPA_MENU.md`
 
 ## Fase 2 — Veículos
 - [ ] Cadastro de Veículos (vínculo com Cliente)
