@@ -97,8 +97,10 @@
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\ClienteDAO.cs" />
     <Compile Include="Data\VeiculoDAO.cs" />
+    <Compile Include="Data\ManutencaoDAO.cs" />
     <Compile Include="Models\Cliente.cs" />
     <Compile Include="Models\Veiculo.cs" />
+    <Compile Include="Models\Manutencao.cs" />
     <Compile Include="AboutBox1.cs">
       <SubType>Form</SubType>
     </Compile>

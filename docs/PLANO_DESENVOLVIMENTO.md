@@ -14,10 +14,10 @@ depois que a anterior estiver funcionando e atualizada nos documentos.
 - [x] Edição e exclusão de Clientes
 - [x] Atualizar `docs/BANCO_DE_DADOS.md` e `docs/MAPA_MENU.md`
 
-## Fase 2 — Veículos
-- [ ] Cadastro de Veículos (vínculo com Cliente)
-- [ ] Manutenções e Histórico de Manutenções
-- [ ] Descrição detalhada do veículo
+## Fase 2 — Veículos (concluída ✔)
+- [x] Cadastro de Veículos (com vínculo de Cliente)
+- [x] Manutenções e Histórico de Manutenções
+- [x] Descrição detalhada do veículo
 
 ## Fase 3 — Vendas e Caixa
 - [ ] Registro de Vendas (substitui produto/estoque)

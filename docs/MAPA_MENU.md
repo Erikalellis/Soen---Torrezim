@@ -72,13 +72,12 @@ Marque com ✔️ quando a tela estiver funcional.
 
 | Form (arquivo) | Grupo | Campo(s) originário | Status |
 |---|---|---|---|
-| CadastroCliente | CADASTROS | ✔️ layout feito | ⬜ salvar |
-| CadastroVeículo | CADASTROS | ✔️ layout feito | ⬜ salvar |
-| ConsultaCliente | CONSULTAS | ⬜ | ⬜ |
-| HistoricoCompraCliente | CONSULTAS | ⬜ | ⬜ |
-| ManutecaoVeiculo | OPERAÇÃO | ⬜ | ⬜ |
-| HistoricoManutencao | CONSULTAS | ⬜ | ⬜ |
-| DescricaoVeiculo | CONSULTAS | ⬜ | ⬜ |
+| CadastroCliente | CADASTROS | ✔️ layout feito | ✔️ funcional |
+| ConsultaCliente | CONSULTAS | ✔️ | ✔️ funcional (busca/edita/exclui) |
+| CadastroVeiculo | CADASTROS | ✔️ layout feito | ✔️ funcional |
+| ManutecaoVeiculo | OPERAÇÃO | ✔️ | ✔️ funcional |
+| HistoricoManutencao | CONSULTAS | ✔️ | ✔️ funcional |
+| DescricaoVeiculo | CONSULTAS | ✔️ | ✔️ funcional |
 | CadastroFornecedor | CADASTROS | ⬜ | ⬜ |
 | ContasPagar/ContasReceber | FINANCEIRO | ⬜ | ⬜ |
 | RegistroVendas | OPERAÇÃO | ⬜ | ⬜ |
