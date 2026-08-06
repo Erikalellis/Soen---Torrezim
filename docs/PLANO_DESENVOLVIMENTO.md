@@ -19,10 +19,10 @@ depois que a anterior estiver funcionando e atualizada nos documentos.
 - [x] Manutenções e Histórico de Manutenções
 - [x] Descrição detalhada do veículo
 
-## Fase 3 — Vendas e Caixa
-- [ ] Registro de Vendas (substitui produto/estoque)
-- [ ] Controle de Caixa (venda gera entrada automática)
-- [ ] Análise de margem de lucro
+## Fase 3 — Vendas e Caixa (concluída ✔)
+- [x] Registro de Vendas (itens + cliente + veículo)
+- [x] Controle de Caixa (venda gera entrada automaticamente + lançamentos manuais + saldo)
+- [ ] Análise de margem de lucro (próximo)
 
 ## Fase 4 — Estoque
 - [ ] Cadastro de produtos/peças

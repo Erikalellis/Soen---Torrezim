@@ -109,6 +109,32 @@ CREATE TABLE IF NOT EXISTS manutencoes (
     valor       REAL,
     status      TEXT DEFAULT 'aberta'
 );
+
+CREATE TABLE IF NOT EXISTS vendas (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    data            TEXT DEFAULT (datetime('now','localtime')),
+    cliente_id      INTEGER REFERENCES clientes(id),
+    veiculo_id      INTEGER REFERENCES veiculos(id),
+    valor_total     REAL NOT NULL DEFAULT 0,
+    forma_pagamento TEXT,
+    observacoes     TEXT
+);
+
+CREATE TABLE IF NOT EXISTS vendas_itens (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    venda_id   INTEGER NOT NULL REFERENCES vendas(id),
+    descricao  TEXT,
+    quantidade REAL NOT NULL DEFAULT 1,
+    valor_unit REAL NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS caixa (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    data      TEXT DEFAULT (datetime('now','localtime')),
+    tipo      TEXT NOT NULL,          -- 'entrada' | 'saida'
+    descricao TEXT,
+    valor     REAL NOT NULL DEFAULT 0
+);
 ";
             }
         }

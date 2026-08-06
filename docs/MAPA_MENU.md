@@ -78,6 +78,8 @@ Marque com ✔️ quando a tela estiver funcional.
 | ManutecaoVeiculo | OPERAÇÃO | ✔️ | ✔️ funcional |
 | HistoricoManutencao | CONSULTAS | ✔️ | ✔️ funcional |
 | DescricaoVeiculo | CONSULTAS | ✔️ | ✔️ funcional |
+| RegistroVendas | OPERAÇÃO | ✔️ | ✔️ funcional |
+| ControleCaixa | FINANCEIRO | ✔️ | ✔️ funcional |
 | CadastroFornecedor | CADASTROS | ⬜ | ⬜ |
 | ContasPagar/ContasReceber | FINANCEIRO | ⬜ | ⬜ |
 | RegistroVendas | OPERAÇÃO | ⬜ | ⬜ |
