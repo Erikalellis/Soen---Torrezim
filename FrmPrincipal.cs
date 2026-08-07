@@ -18,7 +18,6 @@ namespace Soen___Torrezim
             InitializeComponent();
             var itemInicio = new ToolStripMenuItem("Painel Inicial (Dashboard)");
             itemInicio.Click += (s, e) => new DashboardPrincipal().Show();
-            menuStrip1.Items.Insert(0, itemInicio);
 
             var itemServicos = new ToolStripMenuItem("Cadastro de Serviços");
             itemServicos.Click += (s, e) => new CadastroServico().Show();
@@ -44,25 +43,46 @@ namespace Soen___Torrezim
             itemMargem.Click += (s, e) => new RelatorioMargem().Show();
             toolStripMenuItem8.DropDownItems.Add(itemMargem);
 
-            var itemBackup = new ToolStripMenuItem("Backup e Restauração");
-            itemBackup.Click += (s, e) => new BackupRestore().Show();
-            toolStripMenuItem7.DropDownItems.Add(itemBackup);
-
-            var itemImpressora = new ToolStripMenuItem("Impressora");
-            itemImpressora.Click += (s, e) => new ConfigImpressora().Show();
-            toolStripMenuItem7.DropDownItems.Add(itemImpressora);
-
-            var itemUsuarios = new ToolStripMenuItem("Usuários do Sistema");
-            itemUsuarios.Click += (s, e) => new Usuarios().ShowDialog();
-            toolStripMenuItem7.DropDownItems.Add(itemUsuarios);
+            // ===== Menu Configurações (consolida as preferências do sistema) =====
+            var itemConfig = new ToolStripMenuItem("Configurações");
 
             var itemEmpresa = new ToolStripMenuItem("Dados da Empresa");
             itemEmpresa.Click += (s, e) => new EmpresaConfig().ShowDialog();
-            toolStripMenuItem7.DropDownItems.Add(itemEmpresa);
+            itemConfig.DropDownItems.Add(itemEmpresa);
+
+            var itemImpressora = new ToolStripMenuItem("Impressora");
+            itemImpressora.Click += (s, e) => new ConfigImpressora().Show();
+            itemConfig.DropDownItems.Add(itemImpressora);
+
+            itemConfig.DropDownItems.Add(new ToolStripSeparator());
+
+            var itemBackup = new ToolStripMenuItem("Backup e Restauração");
+            itemBackup.Click += (s, e) => new BackupRestore().Show();
+            itemConfig.DropDownItems.Add(itemBackup);
+
+            var itemUsuarios = new ToolStripMenuItem("Usuários do Sistema");
+            itemUsuarios.Click += (s, e) => new Usuarios().ShowDialog();
+            itemConfig.DropDownItems.Add(itemUsuarios);
 
             var itemTrocar = new ToolStripMenuItem("Trocar Usuário");
             itemTrocar.Click += (s, e) => TrocarUsuario();
-            toolStripMenuItem7.DropDownItems.Add(itemTrocar);
+            itemConfig.DropDownItems.Add(itemTrocar);
+
+            itemConfig.DropDownItems.Add(new ToolStripSeparator());
+
+            var itemSobre = new ToolStripMenuItem("Sobre / Informações");
+            itemSobre.Click += (s, e) => new SobreInfo().ShowDialog();
+            itemConfig.DropDownItems.Add(itemSobre);
+
+            // ===== Menu Sair (fecha o programa) =====
+            var itemSair = new ToolStripMenuItem("Sair");
+            itemSair.Click += (s, e) => Close();
+
+            // Insere os novos menus no INÍCIO da barra para garantir que fiquem visíveis
+            // (menus muito à direita podem ser ocultados pelo botão de overflow ">>").
+            menuStrip1.Items.Insert(0, itemConfig);
+            menuStrip1.Items.Insert(1, itemSair);
+            menuStrip1.Items.Insert(2, itemInicio);
         }
 
         private void TrocarUsuario()

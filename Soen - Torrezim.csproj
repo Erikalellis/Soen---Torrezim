@@ -60,8 +60,7 @@
     <WarningLevel>5</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>1562687-code-computer-creative-html-process-technology-web-development_107058.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Soen___Torrezim.Program</StartupObject>
@@ -196,6 +195,12 @@
     </Compile>
     <Compile Include="ConfigImpressora.Designer.cs">
       <DependentUpon>ConfigImpressora.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SobreInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SobreInfo.Designer.cs">
+      <DependentUpon>SobreInfo.cs</DependentUpon>
     </Compile>
     <Compile Include="Login.cs">
       <SubType>Form</SubType>
