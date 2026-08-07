@@ -417,17 +417,59 @@ VALUES (@vid,@desc,@q,@vu)";
                     }
                 }
 
-                // Marca a OS como convertida
+                // Marca a OS como convertida (registrando o momento da conclusão)
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.Transaction = tx;
-                    cmd.CommandText = "UPDATE orcamentos SET status='convertido' WHERE id=@id";
+                    cmd.CommandText = "UPDATE orcamentos SET status='convertido', concluido_em=datetime('now','localtime') WHERE id=@id";
                     cmd.Parameters.AddWithValue("@id", orcamentoId);
                     cmd.ExecuteNonQuery();
                 }
 
                 tx.Commit();
             }
+        }
+
+        /// <summary>Resultado agregado do tempo de atendimento por técnico.</summary>
+        public class TempoAtendimento
+        {
+            public string NomeTecnico;
+            public long Quantidade;
+            public double MediaHoras;
+        }
+
+        /// <summary>
+        /// Tempo médio (em horas) entre a criação e a conclusão das OS convertidas,
+        /// agrupado por técnico responsável.
+        /// </summary>
+        public static List<TempoAtendimento> ListarTemposAtendimento()
+        {
+            var lista = new List<TempoAtendimento>();
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+SELECT t.nome AS tec_nome, COUNT(*) AS qtd,
+       AVG((julianday(o.concluido_em) - julianday(o.data)) * 24) AS media_horas
+FROM orcamentos o
+JOIN tecnicos t ON t.id = o.tecnico_id
+WHERE o.status='convertido' AND o.concluido_em IS NOT NULL AND o.concluido_em <> ''
+GROUP BY t.id, t.nome
+ORDER BY t.nome";
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    while (leitor.Read())
+                    {
+                        lista.Add(new TempoAtendimento
+                        {
+                            NomeTecnico = LerStr(leitor, "tec_nome"),
+                            Quantidade = leitor.GetInt64(leitor.GetOrdinal("qtd")),
+                            MediaHoras = leitor.IsDBNull(leitor.GetOrdinal("media_horas")) ? 0 : leitor.GetDouble(leitor.GetOrdinal("media_horas"))
+                        });
+                    }
+                }
+            }
+            return lista;
         }
 
         private static long? LerLongNullable(SQLiteDataReader leitor, string col)

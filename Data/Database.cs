@@ -51,6 +51,7 @@ namespace Soen___Torrezim.Data
             AdicionarColunaSeFaltar(conn, "orcamentos", "numero", "TEXT");
             AdicionarColunaSeFaltar(conn, "orcamentos", "tecnico_id", "INTEGER");
             AdicionarColunaSeFaltar(conn, "orcamentos", "comissao", "REAL DEFAULT 0");
+            AdicionarColunaSeFaltar(conn, "orcamentos", "concluido_em", "TEXT");
             AdicionarColunaSeFaltar(conn, "veiculos", "quilometragem", "REAL DEFAULT 0");
             AdicionarColunaSeFaltar(conn, "veiculos", "proxima_revisao", "TEXT");
             AdicionarColunaSeFaltar(conn, "orcamento_itens", "produto_id", "INTEGER");

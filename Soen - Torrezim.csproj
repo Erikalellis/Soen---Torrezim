@@ -370,6 +370,12 @@
     <Compile Include="RelatorioTecnico.Designer.cs">
       <DependentUpon>RelatorioTecnico.cs</DependentUpon>
     </Compile>
+    <Compile Include="RelatorioTempoTecnico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioTempoTecnico.Designer.cs">
+      <DependentUpon>RelatorioTempoTecnico.cs</DependentUpon>
+    </Compile>
     <Compile Include="RelatorioMargem.cs">
       <SubType>Form</SubType>
     </Compile>

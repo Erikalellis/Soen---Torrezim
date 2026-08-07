@@ -32,6 +32,10 @@ namespace Soen___Torrezim
             itemComTecnico.Click += (s, e) => new RelatorioTecnico().Show();
             toolStripMenuItem5.DropDownItems.Add(itemComTecnico);
 
+            var itemTempoTecnico = new ToolStripMenuItem("Tempo Médio de Atendimento por Técnico");
+            itemTempoTecnico.Click += (s, e) => new RelatorioTempoTecnico().Show();
+            toolStripMenuItem5.DropDownItems.Add(itemTempoTecnico);
+
             var itemMargem = new ToolStripMenuItem("Margem por Serviço/Peça");
             itemMargem.Click += (s, e) => new RelatorioMargem().Show();
             toolStripMenuItem8.DropDownItems.Add(itemMargem);
