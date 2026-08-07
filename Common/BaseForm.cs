@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -59,7 +60,7 @@ namespace Soen___Torrezim
             catch (Exception ex)
             {
                 // não interrompe a UI
-                Common.Logger.LogError(ex);
+                Logger.LogError(ex);
             }
         }
 

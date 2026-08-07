@@ -180,10 +180,14 @@ namespace Soen___Torrezim
             var txtObs = new TextBox { Location = new Point(120, 64), Width = 220 };
             var bOk = UIHelpers.CreateButton("OK", new Point(150, 140), new Size(90, 28));
             var bCanc = UIHelpers.CreateButton("Cancelar", new Point(248, 140), new Size(90, 28));
-            bOk.Click += (s, e) => { valor = _ParseValor(txtValor.Text); observacao = txtObs.Text.Trim(); dlg.DialogResult = DialogResult.OK; };
+            double novoValor = 0; string novaObs = "";
+            bOk.Click += (s, e) => { novoValor = _ParseValor(txtValor.Text); novaObs = txtObs.Text.Trim(); dlg.DialogResult = DialogResult.OK; };
             bCanc.Click += (s, e) => dlg.DialogResult = DialogResult.Cancel;
             dlg.Controls.AddRange(new Control[] { lNome, lValor, txtValor, lObs, txtObs, bOk, bCanc });
-            return dlg.ShowDialog() == DialogResult.OK;
+            if (dlg.ShowDialog() != DialogResult.OK) return false;
+            valor = novoValor;
+            observacao = novaObs;
+            return true;
         }
 
         private static double _ParseValor(string texto)

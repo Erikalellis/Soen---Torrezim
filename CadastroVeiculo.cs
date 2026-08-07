@@ -35,9 +35,7 @@ namespace Soen___Torrezim
             {
                 Location = new Point(190, 150),
                 Size = new Size(160, 20),
-                Format = DateTimePickerFormat.Short,
-                CheckBox = true,
-                Checked = false
+                Format = DateTimePickerFormat.Short
             };
 
             Controls.Add(lKm);
