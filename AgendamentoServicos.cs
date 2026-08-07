@@ -26,7 +26,6 @@ namespace Soen___Torrezim
         private Button btnExcluir;
         private Button btnGerarOs;
         private DataGridView grid;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public AgendamentoServicos()

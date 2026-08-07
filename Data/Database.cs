@@ -57,6 +57,8 @@ namespace Soen___Torrezim.Data
             AdicionarColunaSeFaltar(conn, "orcamento_itens", "produto_id", "INTEGER");
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
+            Justification = "DDL de migração usa apenas nomes/definições fixas do próprio código, sem entrada do usuário.")]
         private static void AdicionarColunaSeFaltar(SQLiteConnection conn, string tabela, string coluna, string definicao)
         {
             bool existe = false;

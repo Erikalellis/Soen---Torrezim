@@ -30,7 +30,6 @@ namespace Soen___Torrezim
         private Button btnExcluir;
         private Button btnRecibo;
         private DataGridView gridVendas;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         private readonly List<VendaItem> itensAtuais = new List<VendaItem>();

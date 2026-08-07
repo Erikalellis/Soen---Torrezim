@@ -23,7 +23,6 @@ namespace Soen___Torrezim
         private Button btnConcluir;
         private Button btnExcluir;
         private DataGridView grid;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         private long? VeiculoSelecionado
