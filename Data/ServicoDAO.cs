@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using Soen___Torrezim.Models;
@@ -316,6 +317,18 @@ VALUES (@o, @d, @q, @vu, @p)";
 
             List<OrcamentoItem> itens = ListarItensOrcamento(orcamentoId);
             if (itens.Count == 0) return;
+
+            // Valida o saldo de estoque ANTES de criar a venda (evita venda sem baixa).
+            foreach (var it in itens)
+            {
+                if (!it.ProdutoId.HasValue || it.Quantidade <= 0) continue;
+                Produto p = ProdutoDAO.BuscarPorId(it.ProdutoId.Value);
+                if (p == null)
+                    throw new InvalidOperationException("Peça vinculada não encontrada no estoque: " + it.Descricao);
+                if (p.QtdAtual < it.Quantidade)
+                    throw new InvalidOperationException("Estoque insuficiente para " + it.Descricao +
+                        " (disponível: " + p.QtdAtual.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")) + ").");
+            }
 
             var venda = new Venda
             {

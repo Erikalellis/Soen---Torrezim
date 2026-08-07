@@ -407,6 +407,10 @@ namespace Soen___Torrezim
                 MessageBox.Show("OS convertida em venda! Caixa e estoque atualizados.", "SOEN",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+            catch (InvalidOperationException ex)
+            {
+                MessageBox.Show(ex.Message, "Não foi possível converter", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
             catch (Exception ex)
             {
                 Logger.LogError(ex);

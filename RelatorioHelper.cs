@@ -116,6 +116,46 @@ namespace Soen___Torrezim
             }
         }
 
+        /// <summary>Recibo de um lançamento de caixa (entrada/saída).</summary>
+        public static void VisualizarReciboCaixa(Soen___Torrezim.Models.LancamentoCaixa l)
+        {
+            if (l == null) return;
+            var cult = CultureInfo.GetCultureInfo("pt-BR");
+            Empresa emp = EmpresaDAO.Obter();
+            string nomeEmpresa = string.IsNullOrWhiteSpace(emp.Nome) ? "Soen - Sistema de Gestão" : emp.Nome;
+
+            bool entrada = l.Tipo == "entrada";
+
+            var linhas = new List<DocLine>();
+            linhas.Add(new DocLine(nomeEmpresa, DocStyle.Titulo));
+            if (!string.IsNullOrWhiteSpace(emp.Endereco) || !string.IsNullOrWhiteSpace(emp.Telefone))
+                linhas.Add(new DocLine(ContatoEmpresa(emp), DocStyle.Normal));
+            linhas.Add(new DocLine("RECIBO DE CAIXA", DocStyle.Subtitulo));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("Nº " + l.Id + "        Data: " + l.Data, DocStyle.Normal));
+            linhas.Add(new DocLine("Tipo: " + (entrada ? "ENTRADA" : "SAÍDA"), DocStyle.Normal));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("Descrição: " + l.Descricao, DocStyle.Normal));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine((entrada ? "VALOR RECEBIDO: " : "VALOR PAGO: ") + "R$ " + l.Valor.ToString("N2", cult), DocStyle.Destaque));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("_______________________________________________", DocStyle.Normal));
+            linhas.Add(new DocLine(nomeEmpresa, DocStyle.Normal));
+            if (!string.IsNullOrWhiteSpace(emp.Email) || !string.IsNullOrWhiteSpace(emp.Site))
+                linhas.Add(new DocLine(ContatoRodape(emp), DocStyle.Normal));
+
+            using (var dlg = new PrintDialog())
+            using (var doc = new PrintDocument())
+            {
+                var render = new DocPrinter(linhas);
+                doc.PrintPage += render.ImprimirPagina;
+                using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
+                {
+                    prev.ShowDialog();
+                }
+            }
+        }
+
         private static string ContatoEmpresa(Empresa emp)
         {
             var partes = new List<string>();

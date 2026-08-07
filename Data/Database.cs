@@ -226,7 +226,8 @@ CREATE TABLE IF NOT EXISTS orcamento_itens (
     orcamento_id INTEGER NOT NULL REFERENCES orcamentos(id),
     descricao    TEXT,
     quantidade   REAL DEFAULT 1,
-    valor_unit   REAL DEFAULT 0
+    valor_unit   REAL DEFAULT 0,
+    produto_id   INTEGER REFERENCES produtos(id)
 );
 
 CREATE TABLE IF NOT EXISTS financeiro (
@@ -259,7 +260,12 @@ CREATE TABLE IF NOT EXISTS empresa (
     estado    TEXT,
     email     TEXT,
     site      TEXT,
-    observacoes TEXT
+    observacoes TEXT,
+    background_image TEXT,
+    background_mode  TEXT DEFAULT 'stretch',
+    logo_path  TEXT,
+    logo_width INTEGER DEFAULT 0,
+    logo_height INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS tecnicos (

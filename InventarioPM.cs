@@ -31,6 +31,7 @@ namespace Soen___Torrezim
         private ToolStripStatusLabel lblStatus;
 
         private long? _produtoEdicao;
+        private bool _alertaMostrado;
 
         public InventarioPM()
         {
@@ -123,12 +124,26 @@ namespace Soen___Torrezim
             grid.Rows.Clear();
             List<Produto> lista = ProdutoDAO.Listar(filtro);
             var cult = CultureInfo.GetCultureInfo("pt-BR");
+            int baixo = 0;
             foreach (var p in lista)
             {
-                grid.Rows.Add(p.Id, p.Nome, p.Categoria, p.QtdAtual.ToString("0.##", cult), p.Unidade,
+                int idx = grid.Rows.Add(p.Id, p.Nome, p.Categoria, p.QtdAtual.ToString("0.##", cult), p.Unidade,
                     p.Custo.ToString("N2", cult), p.Preco.ToString("N2", cult));
+                if (p.QtdAtual <= 5)
+                {
+                    grid.Rows[idx].DefaultCellStyle.BackColor = Color.LightSalmon;
+                    grid.Rows[idx].DefaultCellStyle.SelectionBackColor = Color.IndianRed;
+                    baixo++;
+                }
             }
-            lblStatus.Text = lista.Count + " produto(s) no estoque.";
+            lblStatus.Text = lista.Count + " produto(s) no estoque." + (baixo > 0 ? " • ALERTA: " + baixo + " com estoque baixo (≤5)." : "");
+
+            if (baixo > 0 && !_alertaMostrado)
+            {
+                _alertaMostrado = true;
+                MessageBox.Show("Atenção: " + baixo + " produto(s) com estoque baixo (qtd ≤ 5).\nReponha o estoque para evitar falta de peças.",
+                    "Estoque baixo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void SalvarProduto()

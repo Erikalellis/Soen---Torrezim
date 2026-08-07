@@ -20,6 +20,7 @@ namespace Soen___Torrezim
         private TextBox txtValor;
         private Button btnLancar;
         private Button btnExcluir;
+        private Button btnRecibo;
         private Label lblSaldo;
         private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
@@ -74,6 +75,9 @@ namespace Soen___Torrezim
             btnExcluir = UIHelpers.CreateButton("Excluir Selecionado", new Point(612, 400), new Size(136, 26));
             btnExcluir.Click += (s, e) => Excluir();
 
+            btnRecibo = UIHelpers.CreateButton("Recibo do Lançamento", new Point(468, 400), new Size(136, 26));
+            btnRecibo.Click += (s, e) => ImprimirReciboCaixa();
+
             lblSaldo = new Label
             {
                 AutoSize = true,
@@ -86,7 +90,7 @@ namespace Soen___Torrezim
             statusBar.Items.Add(lblStatus);
             statusBar.Location = new Point(0, 438);
 
-            Controls.AddRange(new Control[] { lblTipo, cmbTipo, lblDesc, txtDescricao, lblValor, txtValor, btnLancar, grid, btnExcluir, lblSaldo, statusBar });
+            Controls.AddRange(new Control[] { lblTipo, cmbTipo, lblDesc, txtDescricao, lblValor, txtValor, btnLancar, grid, btnExcluir, btnRecibo, lblSaldo, statusBar });
         }
 
         private void CarregarLancamentos()
@@ -153,6 +157,17 @@ namespace Soen___Torrezim
                 CaixaDAO.Excluir(id);
                 CarregarLancamentos();
             }
+        }
+
+        private void ImprimirReciboCaixa()
+        {
+            if (grid.SelectedRows.Count == 0) return;
+            var id = Convert.ToInt64(grid.SelectedRows[0].Cells["Id"].Value);
+            LancamentoCaixa l = null;
+            foreach (var x in CaixaDAO.Listar())
+                if (x.Id == id) { l = x; break; }
+            if (l == null) return;
+            RelatorioHelper.VisualizarReciboCaixa(l);
         }
     }
 }
