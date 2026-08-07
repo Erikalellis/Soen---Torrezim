@@ -84,7 +84,7 @@ servico_id=@serv, data_hora=@dh, status=@status, observacoes=@obs WHERE id=@id";
                     cmd.CommandText = @"INSERT INTO agendamentos (cliente_id, veiculo_id, servico_id, data_hora, status, observacoes)
 VALUES (@cli, @vei, @serv, @dh, @status, @obs)";
                 }
-                cmd.Parameters.AddWithValue("@cliente", (object)a.ClienteId ?? System.DBNull.Value);
+                cmd.Parameters.AddWithValue("@cli", (object)a.ClienteId ?? System.DBNull.Value);
                 cmd.Parameters.AddWithValue("@vei", (object)a.VeiculoId ?? System.DBNull.Value);
                 cmd.Parameters.AddWithValue("@serv", (object)a.ServicoId ?? System.DBNull.Value);
                 cmd.Parameters.AddWithValue("@dh", Database.Nulo(a.DataHora));
