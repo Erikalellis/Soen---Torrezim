@@ -121,24 +121,9 @@ namespace Soen___Torrezim
         private void CarregarMovimentacoes()
         {
             grid.Rows.Clear();
-            using (var conn = Database.AbrirConexao())
-            using (var cmd = conn.CreateCommand())
-            {
-                cmd.CommandText = @"SELECT m.data, p.nome, m.quantidade, m.documento
-FROM movimentacao_estoque m JOIN produtos p ON p.id=m.produto_id
-WHERE m.tipo='entrada' ORDER BY m.id DESC";
-                using (var r = cmd.ExecuteReader())
-                {
-                    var cult = CultureInfo.GetCultureInfo("pt-BR");
-                    while (r.Read())
-                    {
-                        string doc = r.IsDBNull(r.GetOrdinal("documento")) ? "" : r.GetString(r.GetOrdinal("documento"));
-                        grid.Rows.Add(r["data"] != System.DBNull.Value ? r["data"].ToString() : "",
-                            r["nome"] != null ? r["nome"].ToString() : "",
-                            Convert.ToDouble(r["quantidade"]).ToString("0.##", cult), doc);
-                    }
-                }
-            }
+            var cult = CultureInfo.GetCultureInfo("pt-BR");
+            foreach (var m in ProdutoDAO.ListarMovimentacoes("entrada"))
+                grid.Rows.Add(m.Data, m.Produto, m.Quantidade.ToString("0.##", cult), m.Documento);
         }
     }
 

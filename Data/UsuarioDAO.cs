@@ -7,11 +7,62 @@ using Soen___Torrezim.Models;
 
 namespace Soen___Torrezim.Data
 {
-    /// <summary>Acesso a dados dos Usuários, com hash de senha (SHA-256).</summary>
+    /// <summary>Acesso a dados dos Usuários, com senhas protegidas por PBKDF2 (salt + iterações).</summary>
     public static class UsuarioDAO
     {
-        /// <summary>Retorna o hash hexadecimal SHA-256 de uma senha.</summary>
+        private const string PREFIXO_PBKDF2 = "PBKDF2$";
+        private const int ITERACOES = 10000;
+        private const int TAMANHO_SAL = 16;
+        private const int TAMANHO_HASH = 32;
+
+        /// <summary>Deriva a senha em PBKDF2 com salt aleatório — formato "PBKDF2$iter$salt$hash".</summary>
         public static string Hash(string senha)
+        {
+            byte[] salt = new byte[TAMANHO_SAL];
+            using (var rng = RandomNumberGenerator.Create()) rng.GetBytes(salt);
+            return DerivaHash(senha, salt, ITERACOES);
+        }
+
+        private static string DerivaHash(string senha, byte[] salt, int iteracoes)
+        {
+            using (var pbkdf2 = new Rfc2898DeriveBytes(senha ?? "", salt, iteracoes))
+            {
+                byte[] hash = pbkdf2.GetBytes(TAMANHO_HASH);
+                return PREFIXO_PBKDF2 + iteracoes.ToString() + "$" +
+                    Convert.ToBase64String(salt) + "$" + Convert.ToBase64String(hash);
+            }
+        }
+
+        private static bool VerificarHash(string senha, string armazenada)
+        {
+            if (string.IsNullOrEmpty(armazenada)) return false;
+            string[] partes = armazenada.Split('$');
+            if (partes.Length == 4 && partes[0] == "PBKDF2")
+            {
+                try
+                {
+                    int iteracoes = int.Parse(partes[1]);
+                    byte[] salt = Convert.FromBase64String(partes[2]);
+                    byte[] esperado = Convert.FromBase64String(partes[3]);
+                    using (var pbkdf2 = new Rfc2898DeriveBytes(senha ?? "", salt, iteracoes))
+                    {
+                        byte[] atual = pbkdf2.GetBytes(esperado.Length);
+                        if (atual.Length != esperado.Length) return false;
+                        int diff = 0;
+                        for (int i = 0; i < atual.Length; i++) diff |= atual[i] ^ esperado[i];
+                        return diff == 0;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            // Fallback: hashes SHA-256 geradas antes da migração para PBKDF2.
+            return string.Equals(HashSha256(senha), armazenada, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string HashSha256(string senha)
         {
             using (var sha = SHA256.Create())
             {
@@ -19,6 +70,18 @@ namespace Soen___Torrezim.Data
                 var sb = new StringBuilder();
                 foreach (byte b in bytes) sb.Append(b.ToString("x2"));
                 return sb.ToString();
+            }
+        }
+
+        private static void UpgradeSenha(long id, string senha)
+        {
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "UPDATE usuarios SET senha=@s WHERE id=@id";
+                cmd.Parameters.AddWithValue("@s", Hash(senha));
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -72,26 +135,44 @@ namespace Soen___Torrezim.Data
             return lista;
         }
 
+        /// <summary>Verifica se já existe um usuário com o mesmo login.</summary>
+        public static bool ExisteUsuario(string login)
+        {
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT COUNT(*) FROM usuarios WHERE usuario=@u";
+                cmd.Parameters.AddWithValue("@u", login ?? "");
+                return Convert.ToInt64(cmd.ExecuteScalar()) > 0;
+            }
+        }
+
         public static Usuario Autenticar(string usuario, string senha)
         {
             using (var conn = Database.AbrirConexao())
             using (var cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "SELECT * FROM usuarios WHERE usuario=@u AND senha=@s AND ativo=1";
+                cmd.CommandText = "SELECT * FROM usuarios WHERE usuario=@u AND ativo=1";
                 cmd.Parameters.AddWithValue("@u", usuario ?? "");
-                cmd.Parameters.AddWithValue("@s", Hash(senha));
                 using (var leitor = cmd.ExecuteReader())
                 {
                     if (leitor.Read())
                     {
-                        return new Usuario
+                        string senhaHash = LerStr(leitor, "senha");
+                        if (VerificarHash(senha, senhaHash))
                         {
-                            Id = leitor.GetInt64(leitor.GetOrdinal("id")),
-                            Login = LerStr(leitor, "usuario"),
-                            Nome = LerStr(leitor, "nome"),
-                            Perfil = LerStr(leitor, "perfil"),
-                            Ativo = true
-                        };
+                            long id = leitor.GetInt64(leitor.GetOrdinal("id"));
+                            if (!senhaHash.StartsWith(PREFIXO_PBKDF2))
+                                UpgradeSenha(id, senha);
+                            return new Usuario
+                            {
+                                Id = id,
+                                Login = LerStr(leitor, "usuario"),
+                                Nome = LerStr(leitor, "nome"),
+                                Perfil = LerStr(leitor, "perfil"),
+                                Ativo = true
+                            };
+                        }
                     }
                 }
             }

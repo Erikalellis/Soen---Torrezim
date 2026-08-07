@@ -72,22 +72,46 @@ VALUES (@vid,@desc,@qtd,@unit)";
                     }
                 }
 
-                // Lança entrada no caixa (apenas para vendas novas)
-                if (v.Id <= 0 && v.ValorTotal > 0)
+                // Mantém o caixa coerente: venda nova insere a entrada; edição
+                // remove o lançamento antigo desta venda e relança com o total atual.
+                if (v.Id <= 0)
                 {
-                    using (var c = conn.CreateCommand())
-                    {
-                        c.Transaction = tx;
-                        c.CommandText = @"INSERT INTO caixa (tipo, descricao, valor)
-VALUES ('entrada', @desc, @valor)";
-                        c.Parameters.AddWithValue("@desc", "Venda nº " + idVenda);
-                        c.Parameters.AddWithValue("@valor", v.ValorTotal);
-                        c.ExecuteNonQuery();
-                    }
+                    if (v.ValorTotal > 0)
+                        InserirLancamentoCaixa(conn, tx, idVenda, v.ValorTotal);
+                }
+                else
+                {
+                    RemoverLancamentoCaixa(conn, tx, idVenda);
+                    if (v.ValorTotal > 0)
+                        InserirLancamentoCaixa(conn, tx, idVenda, v.ValorTotal);
                 }
 
                 tx.Commit();
                 return idVenda;
+            }
+        }
+
+        private static void InserirLancamentoCaixa(SQLiteConnection conn, SQLiteTransaction tx, long idVenda, double valor)
+        {
+            using (var c = conn.CreateCommand())
+            {
+                c.Transaction = tx;
+                c.CommandText = @"INSERT INTO caixa (tipo, descricao, valor)
+VALUES ('entrada', @desc, @valor)";
+                c.Parameters.AddWithValue("@desc", "Venda nº " + idVenda);
+                c.Parameters.AddWithValue("@valor", valor);
+                c.ExecuteNonQuery();
+            }
+        }
+
+        private static void RemoverLancamentoCaixa(SQLiteConnection conn, SQLiteTransaction tx, long idVenda)
+        {
+            using (var c = conn.CreateCommand())
+            {
+                c.Transaction = tx;
+                c.CommandText = "DELETE FROM caixa WHERE descricao=@desc";
+                c.Parameters.AddWithValue("@desc", "Venda nº " + idVenda);
+                c.ExecuteNonQuery();
             }
         }
 
@@ -170,12 +194,15 @@ LEFT JOIN veiculos vh ON vh.id=v.veiculo_id WHERE v.id=@id";
             using (var conn = Database.AbrirConexao())
             using (var tx = conn.BeginTransaction())
             {
-                // Estorno? Simplesmente remove itens e a venda. Lançamento do caixa permanece.
+                // Estorno: remove itens, venda e o lançamento do caixa desta venda.
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.Transaction = tx;
-                    cmd.CommandText = "DELETE FROM vendas_itens WHERE venda_id=@id; DELETE FROM vendas WHERE id=@id;";
+                    cmd.CommandText = @"DELETE FROM vendas_itens WHERE venda_id=@id;
+DELETE FROM vendas WHERE id=@id;
+DELETE FROM caixa WHERE descricao=@desc;";
                     cmd.Parameters.AddWithValue("@id", id);
+                    cmd.Parameters.AddWithValue("@desc", "Venda nº " + id);
                     cmd.ExecuteNonQuery();
                 }
                 tx.Commit();

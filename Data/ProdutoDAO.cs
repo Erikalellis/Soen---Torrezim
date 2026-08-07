@@ -152,5 +152,42 @@ VALUES (@codigo, @nome, @categoria, @unidade, @qtd, @custo, @preco)";
             int i = r.GetOrdinal(col);
             return r.IsDBNull(i) ? "" : r.GetString(i);
         }
+
+        /// <summary>Itens de movimentação de estoque (entrada/saída) com o nome do produto.</summary>
+        public class MovimentacaoEstoqueItem
+        {
+            public string Data;
+            public string Produto;
+            public double Quantidade;
+            public string Documento;
+        }
+
+        /// <summary>Lista as movimentações de estoque de um tipo ("entrada" ou "saida").</summary>
+        public static List<MovimentacaoEstoqueItem> ListarMovimentacoes(string tipo)
+        {
+            var lista = new List<MovimentacaoEstoqueItem>();
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"SELECT m.data, p.nome, m.quantidade, m.documento
+FROM movimentacao_estoque m JOIN produtos p ON p.id=m.produto_id
+WHERE m.tipo=@tipo ORDER BY m.id DESC";
+                cmd.Parameters.AddWithValue("@tipo", tipo);
+                using (var r = cmd.ExecuteReader())
+                {
+                    while (r.Read())
+                    {
+                        lista.Add(new MovimentacaoEstoqueItem
+                        {
+                            Data = r.IsDBNull(r.GetOrdinal("data")) ? "" : r.GetString(r.GetOrdinal("data")),
+                            Produto = LerStr(r, "nome"),
+                            Quantidade = r.GetDouble(r.GetOrdinal("quantidade")),
+                            Documento = LerStr(r, "documento")
+                        });
+                    }
+                }
+            }
+            return lista;
+        }
     }
 }

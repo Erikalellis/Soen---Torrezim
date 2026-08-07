@@ -247,32 +247,39 @@ ORDER BY o.id DESC";
 
         // ===== Itens do Orçamento / Nota de Serviço =====
 
-        /// <summary>Substitui a lista de itens de um orçamento (remove os antigos e insere os novos).</summary>
+        /// <summary>Substitui a lista de itens de um orçamento (remove os antigos e insere os novos) em uma única transação.</summary>
         public static void SalvarItensOrcamento(long orcamentoId, List<OrcamentoItem> itens)
         {
             using (var conn = Database.AbrirConexao())
-            using (var cmd = conn.CreateCommand())
+            using (var tx = conn.BeginTransaction())
             {
-                cmd.CommandText = "DELETE FROM orcamento_itens WHERE orcamento_id=@o";
-                cmd.Parameters.AddWithValue("@o", orcamentoId);
-                cmd.ExecuteNonQuery();
-            }
-            if (itens == null) return;
-            foreach (var it in itens)
-            {
-                if (string.IsNullOrWhiteSpace(it.Descricao) && it.Quantidade <= 0 && it.ValorUnit <= 0) continue;
-                using (var conn = Database.AbrirConexao())
                 using (var cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"INSERT INTO orcamento_itens (orcamento_id, descricao, quantidade, valor_unit, produto_id)
-VALUES (@o, @d, @q, @vu, @p)";
+                    cmd.Transaction = tx;
+                    cmd.CommandText = "DELETE FROM orcamento_itens WHERE orcamento_id=@o";
                     cmd.Parameters.AddWithValue("@o", orcamentoId);
-                    cmd.Parameters.AddWithValue("@d", Database.Nulo(it.Descricao));
-                    cmd.Parameters.AddWithValue("@q", it.Quantidade);
-                    cmd.Parameters.AddWithValue("@vu", it.ValorUnit);
-                    cmd.Parameters.AddWithValue("@p", (object)it.ProdutoId ?? System.DBNull.Value);
                     cmd.ExecuteNonQuery();
                 }
+                if (itens != null)
+                {
+                    foreach (var it in itens)
+                    {
+                        if (string.IsNullOrWhiteSpace(it.Descricao) && it.Quantidade <= 0 && it.ValorUnit <= 0) continue;
+                        using (var cmd = conn.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = @"INSERT INTO orcamento_itens (orcamento_id, descricao, quantidade, valor_unit, produto_id)
+VALUES (@o, @d, @q, @vu, @p)";
+                            cmd.Parameters.AddWithValue("@o", orcamentoId);
+                            cmd.Parameters.AddWithValue("@d", Database.Nulo(it.Descricao));
+                            cmd.Parameters.AddWithValue("@q", it.Quantidade);
+                            cmd.Parameters.AddWithValue("@vu", it.ValorUnit);
+                            cmd.Parameters.AddWithValue("@p", (object)it.ProdutoId ?? System.DBNull.Value);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+                tx.Commit();
             }
         }
 
@@ -330,40 +337,92 @@ VALUES (@o, @d, @q, @vu, @p)";
                         " (disponível: " + p.QtdAtual.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")) + ").");
             }
 
-            var venda = new Venda
-            {
-                Data = o.Data,
-                ClienteId = o.ClienteId,
-                VeiculoId = o.VeiculoId,
-                ValorTotal = o.Valor,
-                Observacoes = "Gerada da OS " + (string.IsNullOrWhiteSpace(o.Numero) ? "#" + o.Id : o.Numero)
-            };
-            foreach (var it in itens)
-                venda.Itens.Add(new VendaItem
-                {
-                    Descricao = it.Descricao,
-                    Quantidade = it.Quantidade,
-                    ValorUnit = it.ValorUnit
-                });
+            string refDoc = (string.IsNullOrWhiteSpace(o.Numero) ? "#" + o.Id : o.Numero);
+            string docEstoque = "OS " + refDoc;
 
-            // Venda + itens + caixa (transação própria)
-            long idVenda = VendaDAO.SalvarComCaixa(venda);
-
-            // Baixa de estoque de peças vinculadas
-            string doc = "OS " + (string.IsNullOrWhiteSpace(o.Numero) ? "#" + o.Id : o.Numero);
-            foreach (var it in itens)
-            {
-                if (it.ProdutoId.HasValue && it.Quantidade > 0)
-                    ProdutoDAO.Movimentar(it.ProdutoId.Value, "saida", it.Quantidade, doc);
-            }
-
-            // Marca a OS como convertida
+            // Tudo em UMA transação: venda + itens + caixa + baixa de estoque + status.
             using (var conn = Database.AbrirConexao())
-            using (var cmd = conn.CreateCommand())
+            using (var tx = conn.BeginTransaction())
             {
-                cmd.CommandText = "UPDATE orcamentos SET status='convertido' WHERE id=@id";
-                cmd.Parameters.AddWithValue("@id", orcamentoId);
-                cmd.ExecuteNonQuery();
+                // Venda
+                long idVenda;
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText = @"INSERT INTO vendas (data, cliente_id, veiculo_id, valor_total, forma_pagamento, observacoes)
+VALUES (@data,@cli,@vei,@valor,@forma,@obs)";
+                    cmd.Parameters.AddWithValue("@data", Database.Nulo(o.Data));
+                    cmd.Parameters.AddWithValue("@cli", (object)o.ClienteId ?? System.DBNull.Value);
+                    cmd.Parameters.AddWithValue("@vei", (object)o.VeiculoId ?? System.DBNull.Value);
+                    cmd.Parameters.AddWithValue("@valor", o.Valor);
+                    cmd.Parameters.AddWithValue("@forma", Database.Nulo(""));
+                    cmd.Parameters.AddWithValue("@obs", "Gerada da OS " + refDoc);
+                    cmd.ExecuteNonQuery();
+                    idVenda = conn.LastInsertRowId;
+                }
+
+                // Itens da venda
+                foreach (var it in itens)
+                {
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = @"INSERT INTO vendas_itens (venda_id, descricao, quantidade, valor_unit)
+VALUES (@vid,@desc,@q,@vu)";
+                        cmd.Parameters.AddWithValue("@vid", idVenda);
+                        cmd.Parameters.AddWithValue("@desc", Database.Nulo(it.Descricao));
+                        cmd.Parameters.AddWithValue("@q", it.Quantidade);
+                        cmd.Parameters.AddWithValue("@vu", it.ValorUnit);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Entrada no caixa
+                if (o.Valor > 0)
+                {
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "INSERT INTO caixa (tipo, descricao, valor) VALUES ('entrada', @desc, @valor)";
+                        cmd.Parameters.AddWithValue("@desc", "Venda nº " + idVenda);
+                        cmd.Parameters.AddWithValue("@valor", o.Valor);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Baixa de estoque (movimentação + atualização da quantidade)
+                foreach (var it in itens)
+                {
+                    if (!it.ProdutoId.HasValue || it.Quantidade <= 0) continue;
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "INSERT INTO movimentacao_estoque (produto_id, tipo, quantidade, documento) VALUES (@p,'saida',@q,@doc)";
+                        cmd.Parameters.AddWithValue("@p", it.ProdutoId.Value);
+                        cmd.Parameters.AddWithValue("@q", it.Quantidade);
+                        cmd.Parameters.AddWithValue("@doc", Database.Nulo(docEstoque));
+                        cmd.ExecuteNonQuery();
+                    }
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "UPDATE produtos SET qtd_atual = qtd_atual - @q WHERE id=@id";
+                        cmd.Parameters.AddWithValue("@q", it.Quantidade);
+                        cmd.Parameters.AddWithValue("@id", it.ProdutoId.Value);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Marca a OS como convertida
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText = "UPDATE orcamentos SET status='convertido' WHERE id=@id";
+                    cmd.Parameters.AddWithValue("@id", orcamentoId);
+                    cmd.ExecuteNonQuery();
+                }
+
+                tx.Commit();
             }
         }
 

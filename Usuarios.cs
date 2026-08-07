@@ -120,16 +120,10 @@ namespace Soen___Torrezim
             if (u.Id == 0)
             {
                 u.Senha = string.IsNullOrWhiteSpace(txtSenha.Text) ? "1234" : txtSenha.Text;
-                using (var conn = Soen___Torrezim.Data.Database.AbrirConexao())
-                using (var cmd = conn.CreateCommand())
+                if (UsuarioDAO.ExisteUsuario(u.Login))
                 {
-                    cmd.CommandText = "SELECT COUNT(*) FROM usuarios WHERE usuario=@u";
-                    cmd.Parameters.AddWithValue("@u", u.Login);
-                    if ((long)cmd.ExecuteScalar() > 0)
-                    {
-                        MessageBox.Show("Já existe um usuário com esse nome.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
+                    MessageBox.Show("Já existe um usuário com esse nome.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
                 UsuarioDAO.Salvar(u);
             }
