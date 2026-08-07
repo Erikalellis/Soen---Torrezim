@@ -104,6 +104,7 @@
     <Compile Include="Common\UIHelpers.cs" />
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\ConfigDAO.cs" />
+    <Compile Include="Data\ImpressoraConfig.cs" />
     <Compile Include="Data\BackupAgendado.cs" />
     <Compile Include="Data\ClienteDAO.cs" />
     <Compile Include="Data\VeiculoDAO.cs" />
@@ -189,6 +190,12 @@
     </Compile>
     <Compile Include="ComissoesPagamentos.Designer.cs">
       <DependentUpon>ComissoesPagamentos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConfigImpressora.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfigImpressora.Designer.cs">
+      <DependentUpon>ConfigImpressora.cs</DependentUpon>
     </Compile>
     <Compile Include="Login.cs">
       <SubType>Form</SubType>

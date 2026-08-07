@@ -48,6 +48,10 @@ namespace Soen___Torrezim
             itemBackup.Click += (s, e) => new BackupRestore().Show();
             toolStripMenuItem7.DropDownItems.Add(itemBackup);
 
+            var itemImpressora = new ToolStripMenuItem("Impressora");
+            itemImpressora.Click += (s, e) => new ConfigImpressora().Show();
+            toolStripMenuItem7.DropDownItems.Add(itemImpressora);
+
             var itemUsuarios = new ToolStripMenuItem("Usuários do Sistema");
             itemUsuarios.Click += (s, e) => new Usuarios().ShowDialog();
             toolStripMenuItem7.DropDownItems.Add(itemUsuarios);
@@ -314,6 +318,17 @@ namespace Soen___Torrezim
 
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
+            toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+            toolStripProgressBar1.MarqueeAnimationSpeed = 30;
+            var timerCarregando = new System.Windows.Forms.Timer { Interval = 1000 };
+            timerCarregando.Tick += (s, ev) =>
+            {
+                timerCarregando.Stop();
+                toolStripProgressBar1.Style = ProgressBarStyle.Blocks;
+                toolStripProgressBar1.Value = 0;
+            };
+            timerCarregando.Start();
+
             BackupAgendado.VerificarAgenda();
             _timerBackup = new System.Windows.Forms.Timer { Interval = 3600000 };
             _timerBackup.Tick += (s, ev) => BackupAgendado.VerificarAgenda();

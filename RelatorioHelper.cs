@@ -95,6 +95,7 @@ namespace Soen___Torrezim
             using (var dlg = new PrintDialog())
             using (var doc = new PrintDocument())
             {
+                AplicarImpressoraPadrao(doc);
                 var render = new DocPrinter(linhas);
                 doc.PrintPage += render.ImprimirPagina;
                 using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
@@ -147,6 +148,7 @@ namespace Soen___Torrezim
             using (var dlg = new PrintDialog())
             using (var doc = new PrintDocument())
             {
+                AplicarImpressoraPadrao(doc);
                 var render = new DocPrinter(linhas);
                 doc.PrintPage += render.ImprimirPagina;
                 using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
@@ -231,6 +233,7 @@ namespace Soen___Torrezim
             using (var dlg = new PrintDialog())
             using (var doc = new PrintDocument())
             {
+                AplicarImpressoraPadrao(doc);
                 var render = new DocPrinter(linhas);
                 doc.PrintPage += render.ImprimirPagina;
                 using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
@@ -363,6 +366,7 @@ namespace Soen___Torrezim
             using (var pd = new PrintDialog())
             using (var doc = new PrintDocument())
             {
+                AplicarImpressoraPadrao(doc);
                 if (pd.ShowDialog() != DialogResult.OK) return;
                 var render = new GridPrinter(grid, titulo);
                 doc.PrintPage += render.ImprimirPagina;
@@ -381,6 +385,28 @@ namespace Soen___Torrezim
             if (s.Contains(";") || s.Contains("\"") || s.Contains("\n"))
                 return "\"" + s.Replace("\"", "\"\"") + "\"";
             return s;
+        }
+
+        /// <summary>Aplica a impressora padrão salva nas configurações ao documento.</summary>
+        private static void AplicarImpressoraPadrao(PrintDocument doc)
+        {
+            try
+            {
+                string nome = ImpressoraConfig.Padrao;
+                if (string.IsNullOrWhiteSpace(nome)) return;
+                foreach (string p in PrinterSettings.InstalledPrinters)
+                {
+                    if (string.Equals(p, nome, StringComparison.OrdinalIgnoreCase))
+                    {
+                        doc.PrinterSettings.PrinterName = p;
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // mantém a impressora padrão do sistema em caso de problema
+            }
         }
 
         /// <summary>Desenha o conteúdo de um DataGridView no PrintDocument, com paginação.</summary>
