@@ -24,6 +24,7 @@ namespace Soen___Torrezim
         private Button btnConcluir;
         private Button btnCancelar;
         private Button btnExcluir;
+        private Button btnGerarOs;
         private DataGridView grid;
         private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
@@ -75,6 +76,9 @@ namespace Soen___Torrezim
             btnExcluir = UIHelpers.CreateButton("Excluir Sel.", new Point(366, 90), new Size(110, 28));
             btnExcluir.Click += (s, e) => Excluir();
 
+            btnGerarOs = UIHelpers.CreateButton("Gerar OS do Sel.", new Point(484, 90), new Size(120, 28));
+            btnGerarOs.Click += (s, e) => GerarOsDoAgendamento();
+
             grid = new DataGridView
             {
                 Location = new Point(12, 132),
@@ -101,7 +105,7 @@ namespace Soen___Torrezim
 
             Controls.AddRange(new Control[] { l1, cmbCliente, l2, cmbVeiculo, l3, cmbServico,
                 l4, dtpData, l5, txtHora, l6, txtObs,
-                btnAgendar, btnConcluir, btnCancelar, btnExcluir, grid });
+                btnAgendar, btnConcluir, btnCancelar, btnExcluir, btnGerarOs, grid });
             // BaseForm já adicionou o StatusStrip ao Controls no construtor.
         }
 
@@ -201,6 +205,31 @@ namespace Soen___Torrezim
                 ServicoDAO.ExcluirAgendamento(id.Value);
                 CarregarAgendamentos();
             }
+        }
+
+        private void GerarOsDoAgendamento()
+        {
+            var id = AgendamentoSelecionado();
+            if (!id.HasValue) return;
+            Agendamento a = null;
+            foreach (var x in ServicoDAO.ListarAgendamentos())
+                if (x.Id == id.Value) { a = x; break; }
+            if (a == null) return;
+            if (a.Status != "concluido")
+            {
+                MessageBox.Show("Para gerar uma OS, o agendamento deve estar CONCLUÍDO.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            double valor = 0;
+            if (a.ServicoId.HasValue)
+                foreach (Servico s in ServicoDAO.ListarServicos())
+                    if (s.Id == a.ServicoId.Value) { valor = s.Preco; break; }
+
+            var form = new CriacaoOrcamentos();
+            form.PreencherParaAgendamento(a.ClienteId, a.VeiculoId, a.NomeServico, valor);
+            form.Show();
         }
     }
 

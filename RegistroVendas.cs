@@ -28,6 +28,7 @@ namespace Soen___Torrezim
         private Button btnSalvar;
         private Button btnNovo;
         private Button btnExcluir;
+        private Button btnRecibo;
         private DataGridView gridVendas;
         private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
@@ -125,6 +126,9 @@ namespace Soen___Torrezim
             btnExcluir = UIHelpers.CreateButton("Excluir Selecionada", new Point(760, y + 185), new Size(120, 26));
             btnExcluir.Click += (s, e) => ExcluirVenda();
 
+            btnRecibo = UIHelpers.CreateButton("Recibo / Nota", new Point(622, y + 185), new Size(120, 26));
+            btnRecibo.Click += (s, e) => ImprimirReciboVenda();
+
             // usa StatusStrip padrão da BaseForm
             lblStatus = BaseStatusLabel;
 
@@ -133,7 +137,7 @@ namespace Soen___Torrezim
                 lblItem, txtItem, lblQtd, txtQtd, lblVu, txtValorUnit, btnAdicionar,
                 gridItens, btnRemoverItem, lblTotal, txtTotal,
                 lblForma, cmbForma, btnSalvar, btnNovo,
-                lblHist, gridVendas, btnExcluir
+                lblHist, gridVendas, btnExcluir, btnRecibo
             });
         }
 
@@ -284,6 +288,16 @@ namespace Soen___Torrezim
                 var v = cmbVeiculo.Items[i] as ComboVeiculo;
                 if (v != null && v.Veiculo.Id == id.Value) { cmbVeiculo.SelectedIndex = i; return; }
             }
+        }
+
+        private void ImprimirReciboVenda()
+        {
+            if (gridVendas.SelectedRows.Count == 0) return;
+            var id = Convert.ToInt64(gridVendas.SelectedRows[0].Cells["Id"].Value);
+            Venda v = VendaDAO.BuscarPorId(id);
+            if (v == null) return;
+            Cliente c = v.ClienteId.HasValue ? ClienteDAO.BuscarPorId(v.ClienteId.Value) : null;
+            RelatorioHelper.VisualizarReciboVenda(v, c);
         }
 
         private void ExcluirVenda()

@@ -240,6 +240,12 @@
     <Compile Include="ControleCaixa.Designer.cs">
       <DependentUpon>ControleCaixa.cs</DependentUpon>
     </Compile>
+    <Compile Include="DashboardPrincipal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DashboardPrincipal.Designer.cs">
+      <DependentUpon>DashboardPrincipal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Tecnicos.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -361,6 +367,12 @@
     </Compile>
     <Compile Include="RelatorioTecnico.Designer.cs">
       <DependentUpon>RelatorioTecnico.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RelatorioMargem.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioMargem.Designer.cs">
+      <DependentUpon>RelatorioMargem.cs</DependentUpon>
     </Compile>
     <Compile Include="RelatorioVFi.cs">
       <SubType>Form</SubType>

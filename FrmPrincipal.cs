@@ -14,6 +14,10 @@ namespace Soen___Torrezim
         public FrmPrincipal()
         {
             InitializeComponent();
+            var itemInicio = new ToolStripMenuItem("Painel Inicial (Dashboard)");
+            itemInicio.Click += (s, e) => new DashboardPrincipal().Show();
+            menuStrip1.Items.Insert(0, itemInicio);
+
             var itemServicos = new ToolStripMenuItem("Cadastro de Serviços");
             itemServicos.Click += (s, e) => new CadastroServico().Show();
             toolStripMenuItem5.DropDownItems.Add(itemServicos);
@@ -25,6 +29,10 @@ namespace Soen___Torrezim
             var itemComTecnico = new ToolStripMenuItem("Comissões por Técnico");
             itemComTecnico.Click += (s, e) => new RelatorioTecnico().Show();
             toolStripMenuItem5.DropDownItems.Add(itemComTecnico);
+
+            var itemMargem = new ToolStripMenuItem("Margem por Serviço/Peça");
+            itemMargem.Click += (s, e) => new RelatorioMargem().Show();
+            toolStripMenuItem8.DropDownItems.Add(itemMargem);
 
             var itemBackup = new ToolStripMenuItem("Backup e Restauração");
             itemBackup.Click += (s, e) => new BackupRestore().Show();

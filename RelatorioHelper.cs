@@ -133,6 +133,73 @@ namespace Soen___Torrezim
             return string.Join("   ", partes);
         }
 
+        /// <summary>Recibo/nota de venda: identifica cliente, lista os itens e o total.</summary>
+        public static void VisualizarReciboVenda(Soen___Torrezim.Models.Venda v, Soen___Torrezim.Models.Cliente c)
+        {
+            if (v == null) return;
+            var cult = CultureInfo.GetCultureInfo("pt-BR");
+            Empresa emp = EmpresaDAO.Obter();
+            string nomeEmpresa = string.IsNullOrWhiteSpace(emp.Nome) ? "Soen - Sistema de Gestão" : emp.Nome;
+
+            var linhas = new List<DocLine>();
+            linhas.Add(new DocLine(nomeEmpresa, DocStyle.Titulo));
+            if (!string.IsNullOrWhiteSpace(emp.Endereco) || !string.IsNullOrWhiteSpace(emp.Telefone))
+                linhas.Add(new DocLine(ContatoEmpresa(emp), DocStyle.Normal));
+            linhas.Add(new DocLine("RECIBO DE VENDA", DocStyle.Subtitulo));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("Nº " + v.Id + "        Emitido em: " + v.Data, DocStyle.Normal));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+
+            linhas.Add(new DocLine("CLIENTE", DocStyle.Secao));
+            linhas.Add(new DocLine("Cliente: " + (c != null ? c.NomeRazao : ""), DocStyle.Normal));
+            if (c != null && !string.IsNullOrWhiteSpace(c.CpfCnpj))
+                linhas.Add(new DocLine("CPF/CNPJ: " + c.CpfCnpj, DocStyle.Normal));
+            if (!string.IsNullOrWhiteSpace(v.VeiculoDesc))
+                linhas.Add(new DocLine("Veículo: " + v.VeiculoDesc, DocStyle.Normal));
+
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("ITENS", DocStyle.Secao));
+            if (v.Itens != null && v.Itens.Count > 0)
+            {
+                int n = 0;
+                foreach (var it in v.Itens)
+                {
+                    n++;
+                    string linhaItem = "#" + n + "  " + it.Descricao;
+                    if (it.Quantidade > 1)
+                        linhaItem += "   (x" + it.Quantidade.ToString("0.##") + ")";
+                    linhas.Add(new DocLine(linhaItem + "   = " + ((double)(it.Quantidade * it.ValorUnit)).ToString("N2", cult), DocStyle.Normal));
+                }
+            }
+            else
+            {
+                linhas.Add(new DocLine("(sem itens detalhados)", DocStyle.Normal));
+            }
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("TOTAL: R$ " + v.ValorTotal.ToString("N2", cult), DocStyle.Destaque));
+            if (!string.IsNullOrWhiteSpace(v.FormaPagamento))
+                linhas.Add(new DocLine("Forma de pagamento: " + v.FormaPagamento, DocStyle.Normal));
+
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("_______________________________________________", DocStyle.Normal));
+            linhas.Add(new DocLine("Recebi conforme descrito acima.", DocStyle.Normal));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine(nomeEmpresa, DocStyle.Normal));
+            if (!string.IsNullOrWhiteSpace(emp.Email) || !string.IsNullOrWhiteSpace(emp.Site))
+                linhas.Add(new DocLine(ContatoRodape(emp), DocStyle.Normal));
+
+            using (var dlg = new PrintDialog())
+            using (var doc = new PrintDocument())
+            {
+                var render = new DocPrinter(linhas);
+                doc.PrintPage += render.ImprimirPagina;
+                using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
+                {
+                    prev.ShowDialog();
+                }
+            }
+        }
+
         private class DocLine
         {
             public string Text;

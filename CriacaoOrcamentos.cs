@@ -432,6 +432,20 @@ namespace Soen___Torrezim
             }
         }
 
+        /// <summary>Pré-preenche o formulário a partir de um agendamento concluído.</summary>
+        public void PreencherParaAgendamento(long? clienteId, long? veiculoId, string descricao, double valor)
+        {
+            if (clienteId.HasValue)
+                for (int i = 0; i < cmbCliente.Items.Count; i++)
+                    if (((ComboCliente)cmbCliente.Items[i]).Id == clienteId.Value) { cmbCliente.SelectedIndex = i; break; }
+            if (veiculoId.HasValue)
+                for (int i = 0; i < cmbVeiculo.Items.Count; i++)
+                    if (((ComboVeiculo)cmbVeiculo.Items[i]).Veiculo.Id == veiculoId.Value) { cmbVeiculo.SelectedIndex = i; break; }
+            if (!string.IsNullOrWhiteSpace(descricao))
+                itensAtuais.Add(new OrcamentoItem { Descricao = descricao, Quantidade = 1, ValorUnit = valor });
+            CarregarItens();
+        }
+
         private void VisualizarDocumento()
         {
             var id = Selecionado();
