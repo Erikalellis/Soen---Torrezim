@@ -63,16 +63,16 @@ namespace Soen___Torrezim
             var l6 = new Label { Text = "Observações:", AutoSize = true, Location = new Point(340, 56) };
             txtObs = new TextBox { Location = new Point(430, 53), Size = new Size(420, 20) };
 
-            btnAgendar = new Button { Text = "Agendar", Location = new Point(12, 90), Size = new Size(110, 28), BackColor = SystemColors.AppWorkspace };
+            btnAgendar = UIHelpers.CreateButton("Agendar", new Point(12, 90), new Size(110, 28));
             btnAgendar.Click += (s, e) => SalvarAgendamento("agendado");
 
-            btnConcluir = new Button { Text = "Concluir Sel.", Location = new Point(130, 90), Size = new Size(110, 28), BackColor = SystemColors.AppWorkspace };
+            btnConcluir = UIHelpers.CreateButton("Concluir Sel.", new Point(130, 90), new Size(110, 28));
             btnConcluir.Click += (s, e) => AlterarStatus("concluido");
 
-            btnCancelar = new Button { Text = "Cancelar Sel.", Location = new Point(248, 90), Size = new Size(110, 28), BackColor = SystemColors.AppWorkspace };
+            btnCancelar = UIHelpers.CreateButton("Cancelar Sel.", new Point(248, 90), new Size(110, 28));
             btnCancelar.Click += (s, e) => AlterarStatus("cancelado");
 
-            btnExcluir = new Button { Text = "Excluir Sel.", Location = new Point(366, 90), Size = new Size(110, 28), BackColor = SystemColors.AppWorkspace };
+            btnExcluir = UIHelpers.CreateButton("Excluir Sel.", new Point(366, 90), new Size(110, 28));
             btnExcluir.Click += (s, e) => Excluir();
 
             grid = new DataGridView

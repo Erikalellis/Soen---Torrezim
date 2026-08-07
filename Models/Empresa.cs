@@ -13,5 +13,12 @@ namespace Soen___Torrezim.Models
         public string Email { get; set; }
         public string Site { get; set; }
         public string Observacoes { get; set; }
+
+        // UI customization
+        public string BackgroundImagePath { get; set; }
+        public string BackgroundMode { get; set; } // stretch | center | tile
+        public string LogoPath { get; set; }
+        public int LogoWidth { get; set; }
+        public int LogoHeight { get; set; }
     }
 }

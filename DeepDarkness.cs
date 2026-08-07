@@ -27,9 +27,9 @@ namespace Soen___Torrezim
                 AutoSize = true,
                 ForeColor = Color.LightSlateGray
             };
-            var btnTrocarFundo = new Button { Text = "Alternar Fundo", Location = new Point(12, 120), Size = new Size(140, 28) };
+            var btnTrocarFundo = UIHelpers.CreateButton("Alternar Fundo", new Point(12, 120), new Size(140, 28));
             btnTrocarFundo.Click += (s, e) => { _cor++; btnTrocarFundo.BackColor = _cor % 2 == 0 ? Color.FromArgb(24, 24, 24) : Color.FromArgb(40, 40, 40); };
-            var btnOk = new Button { Text = "Fechar", Location = new Point(170, 120), Size = new Size(90, 28) };
+            var btnOk = UIHelpers.CreateButton("Fechar", new Point(170, 120), new Size(90, 28));
             btnOk.Click += (s, e) => Close();
 
             Controls.AddRange(new Control[] { l1, btnTrocarFundo, btnOk });

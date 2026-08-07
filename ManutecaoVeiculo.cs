@@ -66,13 +66,13 @@ namespace Soen___Torrezim
             cmbStatus.Items.AddRange(new object[] { "aberta", "concluida", "cancelada" });
             cmbStatus.SelectedIndex = 0;
 
-            btnSalvar = new Button { Text = "Registrar Manutenção", Location = new Point(12, 145), Size = new Size(150, 28), BackColor = SystemColors.AppWorkspace };
+            btnSalvar = UIHelpers.CreateButton("Registrar Manutenção", new Point(12, 145), new Size(150, 28));
             btnSalvar.Click += (s, e) => SalvarManutencao();
 
-            btnConcluir = new Button { Text = "Concluir Selecionada", Location = new Point(170, 145), Size = new Size(140, 28), BackColor = SystemColors.AppWorkspace };
+            btnConcluir = UIHelpers.CreateButton("Concluir Selecionada", new Point(170, 145), new Size(140, 28));
             btnConcluir.Click += (s, e) => AlterarStatus("concluida");
 
-            btnExcluir = new Button { Text = "Excluir Selecionada", Location = new Point(318, 145), Size = new Size(132, 28), BackColor = SystemColors.AppWorkspace };
+            btnExcluir = UIHelpers.CreateButton("Excluir Selecionada", new Point(318, 145), new Size(132, 28));
             btnExcluir.Click += (s, e) => ExcluirManutencao();
 
             // Grid do histórico
@@ -174,7 +174,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao salvar: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao salvar. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

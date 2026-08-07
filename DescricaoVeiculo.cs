@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using Soen___Torrezim.Data;
 using Soen___Torrezim.Models;
@@ -9,7 +10,8 @@ namespace Soen___Torrezim
 {
     /// <summary>
     /// Descrição detalhada de cada veículo: lista todos os veículos com seus
-    /// dados completos (placa, marca, modelo, cor, observações e dono).
+    /// dados completos (placa, marca, modelo, cor, observações, KM, próxima
+    /// revisão e dono), com alerta de revisão vencida/próxima.
     /// </summary>
     public partial class DescricaoVeiculo : Form
     {
@@ -20,6 +22,8 @@ namespace Soen___Torrezim
         private TextBox txtCor;
         private TextBox txtObservacoes;
         private TextBox txtCliente;
+        private TextBox txtKm;
+        private TextBox txtRevisao;
         private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
@@ -27,7 +31,7 @@ namespace Soen___Torrezim
         {
             InitializeComponent();
             Text = "Soen - Descrição Detalhada dos Veículos";
-            ClientSize = new Size(520, 400);
+            ClientSize = new Size(560, 500);
             StartPosition = FormStartPosition.CenterParent;
             BackColor = SystemColors.GradientInactiveCaption;
 
@@ -60,22 +64,28 @@ namespace Soen___Torrezim
             txtObservacoes = new TextBox
             {
                 Location = new Point(140, 210),
-                Size = new Size(340, 90),
+                Size = new Size(340, 60),
                 Multiline = true,
                 ReadOnly = true,
                 BackColor = Color.White,
                 ScrollBars = ScrollBars.Vertical
             };
 
+            var lblKm = new Label { Text = "Quilometragem:", AutoSize = true, Location = new Point(20, 282) };
+            txtKm = new TextBox { Location = new Point(140, 278), Size = new Size(150, 20), ReadOnly = true, BackColor = Color.White };
+
+            var lblRev = new Label { Text = "Próxima revisão:", AutoSize = true, Location = new Point(20, 312) };
+            txtRevisao = new TextBox { Location = new Point(140, 308), Size = new Size(150, 20), ReadOnly = true, BackColor = Color.White };
+
             statusBar = new StatusStrip();
             lblStatus = new ToolStripStatusLabel("Selecione um veículo acima.");
             statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 378);
+            statusBar.Location = new Point(0, 478);
 
             Controls.AddRange(new Control[] {
                 lblSel, cmbVeiculo, lblCliente, txtCliente, lblPlaca, txtPlaca,
                 lblMarca, txtMarca, lblModelo, txtModelo, lblCor, txtCor,
-                lblObs, txtObservacoes, statusBar
+                lblObs, txtObservacoes, lblKm, txtKm, lblRev, txtRevisao, statusBar
             });
         }
 
@@ -102,8 +112,23 @@ namespace Soen___Torrezim
             txtCor.Text = v.Cor;
             txtObservacoes.Text = v.Observacoes;
             txtCliente.Text = v.NomeCliente;
+            var cult = CultureInfo.GetCultureInfo("pt-BR");
+            txtKm.Text = v.Quilometragem > 0 ? v.Quilometragem.ToString("0.##", cult) + " km" : "";
 
-            lblStatus.Text = cmbVeiculo.Items.Count + " veículo(s) cadastrado(s).";
+            string status = cmbVeiculo.Items.Count + " veículo(s) cadastrado(s).";
+            txtRevisao.Text = "";
+            DateTime proxima;
+            if (!string.IsNullOrWhiteSpace(v.ProximaRevisao) && DateTime.TryParse(v.ProximaRevisao, out proxima))
+            {
+                txtRevisao.Text = proxima.ToString("dd/MM/yyyy", cult);
+                int dias = (int)(proxima.Date - DateTime.Today).TotalDays;
+                if (dias < 0)
+                    status = "ATENÇÃO: revisão VENCIDA em " + (-dias) + " dia(s) nesta placa!";
+                else if (dias <= 15)
+                    status = "Atenção: revisão próxima (" + dias + " dia(s)) — agende a manutenção.";
+            }
+
+            lblStatus.Text = status;
         }
     }
 }

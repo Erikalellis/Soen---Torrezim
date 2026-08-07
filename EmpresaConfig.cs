@@ -64,7 +64,7 @@ namespace Soen___Torrezim
             var l9 = new Label { Text = "Observações:", AutoSize = true, Location = new Point(lx, 170) };
             txtObs = new TextBox { Location = new Point(fx, 197), Size = new Size(390, 90), Multiline = true, ScrollBars = ScrollBars.Vertical };
 
-            btnSalvar = new Button { Text = "Salvar", Location = new Point(fx, 300), Size = new Size(120, 30), BackColor = SystemColors.AppWorkspace };
+            btnSalvar = UIHelpers.CreateButton("Salvar", new Point(fx, 300), new Size(120, 30));
             btnSalvar.Click += (s, e) => Salvar();
 
             Controls.AddRange(new Control[] { l1, txtNome, l2, txtCnpj, l3, txtTelefone, l4, txtEndereco,

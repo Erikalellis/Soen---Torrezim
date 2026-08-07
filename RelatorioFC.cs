@@ -31,11 +31,11 @@ namespace Soen___Torrezim
 
         private void CriarInterface()
         {
-            btnGerar = new Button { Text = "Gerar Relatório", Location = new Point(12, 12), Size = new Size(130, 28), BackColor = SystemColors.AppWorkspace };
+            btnGerar = UIHelpers.CreateButton("Gerar Relatório", new Point(12, 12), new Size(130, 28));
             btnGerar.Click += (s, e) => Carregar();
-            btnExportar = new Button { Text = "Exportar CSV", Location = new Point(150, 12), Size = new Size(110, 28), BackColor = SystemColors.AppWorkspace };
+            btnExportar = UIHelpers.CreateButton("Exportar CSV", new Point(150, 12), new Size(110, 28));
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(GridAtivo(), "fornecedores_credores.csv");
-            btnImprimir = new Button { Text = "Imprimir", Location = new Point(268, 12), Size = new Size(100, 28), BackColor = SystemColors.AppWorkspace };
+            btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(268, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(GridAtivo(), "Soen - Fornecedores e Credores");
 
             tabs = new TabControl { Location = new Point(12, 50), Size = new Size(790, 380) };

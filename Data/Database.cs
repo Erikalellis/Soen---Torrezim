@@ -53,6 +53,7 @@ namespace Soen___Torrezim.Data
             AdicionarColunaSeFaltar(conn, "orcamentos", "comissao", "REAL DEFAULT 0");
             AdicionarColunaSeFaltar(conn, "veiculos", "quilometragem", "REAL DEFAULT 0");
             AdicionarColunaSeFaltar(conn, "veiculos", "proxima_revisao", "TEXT");
+            AdicionarColunaSeFaltar(conn, "orcamento_itens", "produto_id", "INTEGER");
         }
 
         private static void AdicionarColunaSeFaltar(SQLiteConnection conn, string tabela, string coluna, string definicao)

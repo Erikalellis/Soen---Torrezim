@@ -37,7 +37,7 @@ namespace Soen___Torrezim
             cmbPeriodo.SelectedIndex = 0;
             cmbPeriodo.SelectedIndexChanged += (s, e) => Carregar();
 
-            btnAtualizar = new Button { Text = "Atualizar", Location = new Point(240, 15), Size = new Size(100, 28), BackColor = SystemColors.AppWorkspace };
+            btnAtualizar = UIHelpers.CreateButton("Atualizar", new Point(240, 15), new Size(100, 28));
             btnAtualizar.Click += (s, e) => Carregar();
 
             grid = new DataGridView

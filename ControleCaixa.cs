@@ -139,7 +139,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao lançar: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao lançar. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

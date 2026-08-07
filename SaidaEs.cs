@@ -42,7 +42,7 @@ namespace Soen___Torrezim
             var lQtd = new Label { Text = "Quantidade:", AutoSize = true, Location = new Point(510, 20) };
             txtQuantidade = new TextBox { Location = new Point(595, 16), Size = new Size(70, 20), Text = "1" };
 
-            btnRegistrar = new Button { Text = "Registrar Saída", Location = new Point(680, 13), Size = new Size(120, 26), BackColor = SystemColors.AppWorkspace };
+            btnRegistrar = UIHelpers.CreateButton("Registrar Saída", new Point(680, 13), new Size(120, 26));
             btnRegistrar.Click += (s, e) => Registrar();
 
             var lDoc = new Label { Text = "Documento (opcional):", AutoSize = true, Location = new Point(12, 52) };

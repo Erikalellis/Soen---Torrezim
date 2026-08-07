@@ -148,7 +148,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao salvar: " + ex.Message, "Erro",
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao salvar. Veja o log para detalhes.", "Erro",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

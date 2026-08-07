@@ -18,6 +18,14 @@ namespace Soen___Torrezim
             itemServicos.Click += (s, e) => new CadastroServico().Show();
             toolStripMenuItem5.DropDownItems.Add(itemServicos);
 
+            var itemTecnicos = new ToolStripMenuItem("Técnicos");
+            itemTecnicos.Click += (s, e) => new Tecnicos().Show();
+            toolStripMenuItem5.DropDownItems.Add(itemTecnicos);
+
+            var itemComTecnico = new ToolStripMenuItem("Comissões por Técnico");
+            itemComTecnico.Click += (s, e) => new RelatorioTecnico().Show();
+            toolStripMenuItem5.DropDownItems.Add(itemComTecnico);
+
             var itemBackup = new ToolStripMenuItem("Backup e Restauração");
             itemBackup.Click += (s, e) => new BackupRestore().Show();
             toolStripMenuItem7.DropDownItems.Add(itemBackup);
@@ -292,7 +300,8 @@ namespace Soen___Torrezim
 
         private void statusStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            statusStrip1.Items.Add(toolStripStatusLabel1);
+            if (!statusStrip1.Items.Contains(toolStripStatusLabel1))
+                statusStrip1.Items.Add(toolStripStatusLabel1);
         }
 
         private void sairmenu_Click(object sender, EventArgs e)

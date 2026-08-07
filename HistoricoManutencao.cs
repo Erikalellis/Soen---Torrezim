@@ -37,10 +37,10 @@ namespace Soen___Torrezim
             txtBusca = new TextBox { Location = new Point(12, 16), Size = new Size(280, 22) };
             txtBusca.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) Carregar(txtBusca.Text.Trim()); };
 
-            btnBuscar = new Button { Text = "Buscar", Location = new Point(300, 12), Size = new Size(90, 26), BackColor = SystemColors.AppWorkspace };
+            btnBuscar = UIHelpers.CreateButton("Buscar", new Point(300, 12), new Size(90, 26));
             btnBuscar.Click += (s, e) => Carregar(txtBusca.Text.Trim());
 
-            btnTodos = new Button { Text = "Todos", Location = new Point(398, 12), Size = new Size(90, 26), BackColor = SystemColors.AppWorkspace };
+            btnTodos = UIHelpers.CreateButton("Todos", new Point(398, 12), new Size(90, 26));
             btnTodos.Click += (s, e) => { txtBusca.Clear(); Carregar(""); };
 
             grid = new DataGridView

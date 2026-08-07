@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using Soen___Torrezim.Data;
 using Soen___Torrezim.Models;
@@ -10,13 +11,39 @@ namespace Soen___Torrezim
     public partial class CadastroVeiculo : BaseForm
     {
         private ComboBox cmbClientes; // dono do veículo (seletor adicionado em tempo de execução)
+        private TextBox txtKm;
+        private DateTimePicker dtpRevisao;
 
         public CadastroVeiculo()
         {
             InitializeComponent();
             CriarSeletorCliente();
+            CriarCamposRevisao();
             this.button1.Click += new EventHandler(this.button1_Click);
             textBox1.TextChanged += (s, e) => Validacoes.AplicarMascaraPlaca(textBox1);
+        }
+
+        // Campo de quilometragem atual e próxima revisão programada.
+        private void CriarCamposRevisao()
+        {
+            var lKm = new Label { Text = "Quilometragem (KM):", AutoSize = true, Location = new Point(190, 82) };
+            txtKm = new TextBox { Location = new Point(190, 100), Size = new Size(160, 20) };
+            txtKm.TextChanged += (s, e) => Validacoes.AplicarMascaraValor(txtKm);
+
+            var lRev = new Label { Text = "Próxima revisão:", AutoSize = true, Location = new Point(190, 132) };
+            dtpRevisao = new DateTimePicker
+            {
+                Location = new Point(190, 150),
+                Size = new Size(160, 20),
+                Format = DateTimePickerFormat.Short,
+                CheckBox = true,
+                Checked = false
+            };
+
+            Controls.Add(lKm);
+            Controls.Add(txtKm);
+            Controls.Add(lRev);
+            Controls.Add(dtpRevisao);
         }
 
         // Adiciona o campo "Cliente (dono)" no formulário.
@@ -91,7 +118,9 @@ namespace Soen___Torrezim
                     Marca       = (comboBox1.SelectedItem ?? "").ToString(), // Marca
                     Modelo      = comboBox2.Text.Trim(),                    // Modelo
                     Cor         = textBox4.Text.Trim(),                     // Cor
-                    Observacoes = textBox5.Text.Trim()                      // Observações
+                    Observacoes = textBox5.Text.Trim(),                     // Observações
+                    Quilometragem = LerKm(),
+                    ProximaRevisao = dtpRevisao.Checked ? dtpRevisao.Value.ToString("yyyy-MM-dd") : null
                 };
 
                 VeiculoDAO.Salvar(veiculo);
@@ -103,7 +132,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao salvar: " + ex.Message, "Erro",
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao salvar. Veja o log para detalhes.", "Erro",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -113,11 +143,20 @@ namespace Soen___Torrezim
             textBox1.Clear();
             textBox4.Clear();
             textBox5.Clear();
+            txtKm.Clear();
+            dtpRevisao.Checked = false;
             comboBox1.SelectedIndex = -1;
             comboBox2.SelectedIndex = -1;
             comboBox2.Text = "";
             cmbClientes.SelectedIndex = -1;
             textBox1.Focus();
+        }
+
+        private double LerKm()
+        {
+            double km = 0;
+            double.TryParse(txtKm.Text, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-BR"), out km);
+            return km;
         }
     }
 

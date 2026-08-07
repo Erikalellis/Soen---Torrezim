@@ -99,6 +99,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Common\ComboItems.cs" />
+    <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\UIHelpers.cs" />
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\ClienteDAO.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="Data\FinanceiroDAO.cs" />
     <Compile Include="Data\UsuarioDAO.cs" />
     <Compile Include="Data\EmpresaDAO.cs" />
+    <Compile Include="Data\TecnicoDAO.cs" />
     <Compile Include="Models\Cliente.cs" />
     <Compile Include="Models\Servico.cs" />
     <Compile Include="Models\Financeiro.cs" />
@@ -121,6 +123,7 @@
     <Compile Include="Models\Produto.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Models\Empresa.cs" />
+    <Compile Include="Models\Tecnico.cs" />
     <Compile Include="Validacoes.cs" />
     <Compile Include="RelatorioHelper.cs" />
     <Compile Include="AboutBox1.cs">
@@ -237,6 +240,12 @@
     <Compile Include="ControleCaixa.Designer.cs">
       <DependentUpon>ControleCaixa.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tecnicos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tecnicos.Designer.cs">
+      <DependentUpon>Tecnicos.cs</DependentUpon>
+    </Compile>
     <Compile Include="CriacaoOrcamentos.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -347,6 +356,12 @@
     <Compile Include="RelatorioSP.Designer.cs">
       <DependentUpon>RelatorioSP.cs</DependentUpon>
     </Compile>
+    <Compile Include="RelatorioTecnico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RelatorioTecnico.Designer.cs">
+      <DependentUpon>RelatorioTecnico.cs</DependentUpon>
+    </Compile>
     <Compile Include="RelatorioVFi.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -392,9 +407,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Common\PR_Message.md" />
     <None Include="Common\README_UI_PATCH.md" />
     <None Include="Common\UI_Audit_Report.md" />
     <None Include="Common\UI_Audit_Report_Detailed.md" />
+    <None Include="Common\UI_Final_Report.md" />
     <None Include="Common\UI_Handler_Report.md" />
     <None Include="Common\UI_Manual_Adjustments_Checklist.md" />
     <None Include="CONTRIBUTING_UI.md" />

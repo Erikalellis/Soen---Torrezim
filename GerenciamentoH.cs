@@ -35,9 +35,9 @@ namespace Soen___Torrezim
             dtpData = new DateTimePicker { Location = new Point(90, 17), Size = new Size(110, 20), Format = DateTimePickerFormat.Short };
             var l2 = new Label { Text = "Nova hora:", AutoSize = true, Location = new Point(215, 20) };
             txtHora = new TextBox { Location = new Point(285, 17), Size = new Size(55, 20), Text = "08:00" };
-            btnAplicar = new Button { Text = "Aplicar em Sel.", Location = new Point(350, 15), Size = new Size(110, 28), BackColor = SystemColors.AppWorkspace };
+            btnAplicar = UIHelpers.CreateButton("Aplicar em Sel.", new Point(350, 15), new Size(110, 28));
             btnAplicar.Click += (s, e) => Aplicar();
-            btnAtualizar = new Button { Text = "Atualizar", Location = new Point(470, 15), Size = new Size(100, 28), BackColor = SystemColors.AppWorkspace };
+            btnAtualizar = UIHelpers.CreateButton("Atualizar", new Point(470, 15), new Size(100, 28));
             btnAtualizar.Click += (s, e) => Carregar();
 
             grid = new DataGridView

@@ -32,6 +32,35 @@ namespace Soen___Torrezim
         {
             base.OnLoad(e);
             StandardizeControls(this);
+            ApplyBackgroundFromConfig();
+        }
+
+        private void ApplyBackgroundFromConfig()
+        {
+            try
+            {
+                var cfg = Data.EmpresaDAO.Obter();
+                if (!string.IsNullOrWhiteSpace(cfg.BackgroundImagePath))
+                {
+                    string path = cfg.BackgroundImagePath;
+                    if (System.IO.File.Exists(path))
+                    {
+                        var img = Image.FromFile(path);
+                        this.BackgroundImage = img;
+                        switch ((cfg.BackgroundMode ?? "stretch").ToLower())
+                        {
+                            case "center": this.BackgroundImageLayout = ImageLayout.Center; break;
+                            case "tile": this.BackgroundImageLayout = ImageLayout.Tile; break;
+                            default: this.BackgroundImageLayout = ImageLayout.Stretch; break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // não interrompe a UI
+                Common.Logger.LogError(ex);
+            }
         }
 
         private void StandardizeControls(Control parent)

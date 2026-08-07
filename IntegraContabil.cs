@@ -43,7 +43,7 @@ namespace Soen___Torrezim
             lstModulos.Items.Add("Clientes");
             lstModulos.Items.Add("Produtos");
 
-            btnExportar = new Button { Text = "Exportar CSV", Location = new Point(330, 40), Size = new Size(130, 28), BackColor = SystemColors.AppWorkspace };
+            btnExportar = UIHelpers.CreateButton("Exportar CSV", new Point(330, 40), new Size(130, 28));
             btnExportar.Click += (s, e) => Exportar();
 
             lblStatus = new Label { Text = "", AutoSize = true, Location = new Point(12, 220) };

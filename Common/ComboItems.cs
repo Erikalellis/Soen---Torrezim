@@ -41,4 +41,12 @@ namespace Soen___Torrezim
         public double Qtd { get; set; }
         public override string ToString() { return Nome; }
     }
+
+    public class ComboTecnico
+    {
+        public long Id { get; set; }
+        public string Nome { get; set; }
+        public double Comissao { get; set; }
+        public override string ToString() { return Nome; }
+    }
 }

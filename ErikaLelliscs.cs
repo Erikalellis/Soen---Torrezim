@@ -26,7 +26,7 @@ namespace Soen___Torrezim
                 Location = new Point(12, 20),
                 AutoSize = true
             };
-            var btnOk = new Button { Text = "OK", Location = new Point(160, 190), Size = new Size(90, 28) };
+            var btnOk = UIHelpers.CreateButton("OK", new Point(160, 190), new Size(90, 28));
             btnOk.Click += (s, e) => Close();
 
             Controls.AddRange(new Control[] { l1, btnOk });

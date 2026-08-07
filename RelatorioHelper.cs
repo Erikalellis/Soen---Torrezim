@@ -71,6 +71,12 @@ namespace Soen___Torrezim
 
             linhas.Add(new DocLine("", DocStyle.Normal));
             linhas.Add(new DocLine("Situação: " + TraduzirStatus(o.Status), DocStyle.Normal));
+            if (!string.IsNullOrWhiteSpace(o.NomeTecnico) || o.Comissao > 0)
+            {
+                linhas.Add(new DocLine("Técnico responsável: " + (string.IsNullOrWhiteSpace(o.NomeTecnico) ? "—" : o.NomeTecnico), DocStyle.Normal));
+                if (o.Comissao > 0)
+                    linhas.Add(new DocLine("Comissão: R$ " + o.Comissao.ToString("N2", cult), DocStyle.Normal));
+            }
 
             linhas.Add(new DocLine("", DocStyle.Normal));
             linhas.Add(new DocLine(nota
@@ -234,7 +240,8 @@ namespace Soen___Torrezim
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Erro ao exportar: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Logger.LogError(ex);
+                    MessageBox.Show("Erro ao exportar. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -255,7 +262,8 @@ namespace Soen___Torrezim
                 try { doc.Print(); }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Erro ao imprimir: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Logger.LogError(ex);
+                    MessageBox.Show("Erro ao imprimir. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -292,7 +300,25 @@ namespace Soen___Torrezim
                 using (var fCab = new Font("Arial", 9, FontStyle.Bold))
                 using (var f = new Font("Arial", 9))
                 {
-                    e.Graphics.DrawString(_titulo, fTitulo, Brushes.Black, margem, y);
+                    // desenha logo (se configurado)
+                    float logoOffsetX = 0f;
+                    try
+                    {
+                        var cfg = Data.EmpresaDAO.Obter();
+                        if (!string.IsNullOrWhiteSpace(cfg.LogoPath) && System.IO.File.Exists(cfg.LogoPath))
+                        {
+                            using (var img = Image.FromFile(cfg.LogoPath))
+                            {
+                                int lw = cfg.LogoWidth > 0 ? cfg.LogoWidth : 80;
+                                int lh = cfg.LogoHeight > 0 ? cfg.LogoHeight : (int)(80.0 * img.Height / img.Width);
+                                e.Graphics.DrawImage(img, margem, y, lw, lh);
+                                logoOffsetX = lw + 10f;
+                            }
+                        }
+                    }
+                    catch { }
+
+                    e.Graphics.DrawString(_titulo, fTitulo, Brushes.Black, margem + logoOffsetX, y);
                     y += 30f;
 
                     float cw = largura / Math.Max(1, _grid.Columns.Count);

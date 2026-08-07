@@ -43,7 +43,7 @@ namespace Soen___Torrezim
             var lQtd = new Label { Text = "Quantidade:", AutoSize = true, Location = new Point(510, 20) };
             txtQuantidade = new TextBox { Location = new Point(595, 16), Size = new Size(70, 20), Text = "1" };
 
-            btnRegistrar = new Button { Text = "Registrar Entrada", Location = new Point(680, 13), Size = new Size(120, 26), BackColor = SystemColors.AppWorkspace };
+            btnRegistrar = UIHelpers.CreateButton("Registrar Entrada", new Point(680, 13), new Size(120, 26));
             btnRegistrar.Click += (s, e) => Registrar();
 
             var lDoc = new Label { Text = "Documento/NF (opcional):", AutoSize = true, Location = new Point(12, 52) };
@@ -113,7 +113,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao registrar: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao registrar. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

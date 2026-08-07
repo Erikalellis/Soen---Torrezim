@@ -46,9 +46,9 @@ namespace Soen___Torrezim
             cmbPerfil.SelectedIndex = 0;
             chkAtivo = new CheckBox { Text = "Ativo", Checked = true, Location = new Point(470, 48) };
 
-            btnSalvar = new Button { Text = "Salvar", Location = new Point(12, 110), Size = new Size(90, 28), BackColor = SystemColors.AppWorkspace };
+            btnSalvar = UIHelpers.CreateButton("Salvar", new Point(12, 110), new Size(90, 28));
             btnSalvar.Click += (s, e) => Salvar();
-            btnExcluir = new Button { Text = "Excluir Sel.", Location = new Point(120, 110), Size = new Size(100, 28), BackColor = SystemColors.AppWorkspace };
+            btnExcluir = UIHelpers.CreateButton("Excluir Sel.", new Point(120, 110), new Size(100, 28));
             btnExcluir.Click += (s, e) => Excluir();
 
             grid = new DataGridView

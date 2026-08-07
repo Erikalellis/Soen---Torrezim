@@ -70,7 +70,7 @@ namespace Soen___Torrezim
             var lblVu = new Label { Text = "R$ unit:", AutoSize = true, Location = new Point(620, y + 3) };
             txtValorUnit = new TextBox { Location = new Point(685, y), Size = new Size(90, 20) };
 
-            btnAdicionar = new Button { Text = "Adicionar", Location = new Point(790, y - 3), Size = new Size(90, 26), BackColor = SystemColors.AppWorkspace };
+            btnAdicionar = UIHelpers.CreateButton("Adicionar", new Point(790, y - 3), new Size(90, 26));
             btnAdicionar.Click += (s, e) => AdicionarItem();
 
             y += 34;
@@ -88,7 +88,7 @@ namespace Soen___Torrezim
             gridItens.Columns[0].ReadOnly = false;
 
             y += 160;
-            btnRemoverItem = new Button { Text = "Remover Item Selecionado", Location = new Point(lx, y), Size = new Size(180, 26), BackColor = SystemColors.AppWorkspace };
+            btnRemoverItem = UIHelpers.CreateButton("Remover Item Selecionado", new Point(lx, y), new Size(180, 26));
             btnRemoverItem.Click += (s, e) => RemoverItem();
 
             var lblTotal = new Label { Text = "TOTAL: R$", AutoSize = true, Location = new Point(660, y + 3) };
@@ -100,10 +100,10 @@ namespace Soen___Torrezim
             cmbForma.Items.AddRange(new object[] { "Dinheiro", "Cartão", "Pix", "Boleto", "Fiado" });
             cmbForma.SelectedIndex = 0;
 
-            btnSalvar = new Button { Text = "Salvar Venda", Location = new Point(560, y - 3), Size = new Size(110, 26), BackColor = SystemColors.AppWorkspace };
+            btnSalvar = UIHelpers.CreateButton("Salvar Venda", new Point(560, y - 3), new Size(110, 26));
             btnSalvar.Click += (s, e) => SalvarVenda();
 
-            btnNovo = new Button { Text = "Nova Venda", Location = new Point(680, y - 3), Size = new Size(110, 26), BackColor = SystemColors.AppWorkspace };
+            btnNovo = UIHelpers.CreateButton("Nova Venda", new Point(680, y - 3), new Size(110, 26));
             btnNovo.Click += (s, e) => LimparFormulario();
 
             y += 40;
@@ -122,7 +122,7 @@ namespace Soen___Torrezim
             gridVendas.Columns["Total"].FillWeight = 1.2f;
             gridVendas.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) CarregarVendaParaEdicao(); };
 
-            btnExcluir = new Button { Text = "Excluir Selecionada", Location = new Point(760, y + 185), Size = new Size(120, 26), BackColor = SystemColors.AppWorkspace };
+            btnExcluir = UIHelpers.CreateButton("Excluir Selecionada", new Point(760, y + 185), new Size(120, 26));
             btnExcluir.Click += (s, e) => ExcluirVenda();
 
             // usa StatusStrip padrão da BaseForm
@@ -243,7 +243,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro ao salvar: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao salvar. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

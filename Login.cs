@@ -35,11 +35,11 @@ namespace Soen___Torrezim
             var l2 = new Label { Text = "Senha:", AutoSize = true, Location = new Point(20, 52) };
             txtSenha = new TextBox { Location = new Point(90, 49), Size = new Size(200, 20), PasswordChar = '*' };
 
-            btnEntrar = new Button { Text = "Entrar", Location = new Point(90, 90), Size = new Size(90, 30), BackColor = SystemColors.AppWorkspace };
+            btnEntrar = UIHelpers.CreateButton("Entrar", new Point(90, 90), new Size(90, 30));
             btnEntrar.Click += (s, e) => Entrar();
             btnEntrar.DialogResult = DialogResult.None;
 
-            var btnCancelar = new Button { Text = "Cancelar", Location = new Point(200, 90), Size = new Size(90, 30) };
+            var btnCancelar = UIHelpers.CreateButton("Cancelar", new Point(200, 90), new Size(90, 30));
             btnCancelar.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
 
             AcceptButton = btnEntrar;

@@ -32,7 +32,7 @@ namespace Soen___Torrezim
         {
             var l1 = new Label { Text = "Buscar cliente:", AutoSize = true, Location = new Point(12, 20) };
             txtBuscar = new TextBox { Location = new Point(110, 17), Size = new Size(200, 20) };
-            btnBuscar = new Button { Text = "Buscar", Location = new Point(320, 15), Size = new Size(80, 28), BackColor = SystemColors.AppWorkspace };
+            btnBuscar = UIHelpers.CreateButton("Buscar", new Point(320, 15), new Size(80, 28));
             btnBuscar.Click += (s, e) => CarregarClientes(txtBuscar.Text);
 
             var l2 = new Label { Text = "Cliente:", AutoSize = true, Location = new Point(12, 55) };

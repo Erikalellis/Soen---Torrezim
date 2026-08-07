@@ -18,6 +18,8 @@ namespace Soen___Torrezim
         private ComboBox cmbVeiculo;
         private ComboBox cmbServico;
         private ComboBox cmbTipo;
+        private ComboBox cmbTecnico;
+        private ComboBox cmbPeca;
         private TextBox txtItem;
         private TextBox txtQtd;
         private TextBox txtValorUnit;
@@ -32,7 +34,6 @@ namespace Soen___Torrezim
         private DataGridView gridItens;
         private DataGridView grid;
         private Label lblTotal;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         private readonly List<OrcamentoItem> itensAtuais = new List<OrcamentoItem>();
@@ -51,6 +52,8 @@ namespace Soen___Torrezim
             CriarInterface();
             CarregarClientes();
             CarregarServicos();
+            CarregarTecnicos();
+            CarregarPecas();
             CarregarOrcamentos();
         }
 
@@ -71,6 +74,12 @@ namespace Soen___Torrezim
             cmbTipo.Items.Add("Orçamento (sem compromisso)");
             cmbTipo.Items.Add("Nota de Serviço / OS");
             cmbTipo.SelectedIndex = 0;
+
+            var lT = new Label { Text = "Técnico:", AutoSize = true, Location = new Point(325, 52) };
+            cmbTecnico = new ComboBox { Location = new Point(395, 49), Size = new Size(170, 21), DropDownStyle = ComboBoxStyle.DropDownList };
+
+            var lPe = new Label { Text = "Peça/estoque:", AutoSize = true, Location = new Point(585, 52) };
+            cmbPeca = new ComboBox { Location = new Point(685, 49), Size = new Size(190, 21), DropDownStyle = ComboBoxStyle.DropDownList };
 
             var l5 = new Label { Text = "Serviço/item:", AutoSize = true, Location = new Point(12, 90) };
             txtItem = new TextBox { Location = new Point(95, 87), Size = new Size(430, 20) };
@@ -108,7 +117,7 @@ namespace Soen___Torrezim
             btnAprovar = UIHelpers.CreateButton("Aprovar Sel.", new Point(641, 317), new Size(110, 28));
             btnAprovar.Click += (s, e) => AlterarStatus("aprovado");
             btnConverter = UIHelpers.CreateButton("Converter", new Point(759, 317), new Size(95, 28));
-            btnConverter.Click += (s, e) => AlterarStatus("convertido");
+            btnConverter.Click += (s, e) => ConverterSel();
             btnExcluir = UIHelpers.CreateButton("Excluir Sel.", new Point(13, 350), new Size(110, 28));
             btnExcluir.Click += (s, e) => Excluir();
             btnVisualizar = UIHelpers.CreateButton("Visualizar Doc.", new Point(131, 350), new Size(120, 28));
@@ -142,6 +151,7 @@ namespace Soen___Torrezim
             lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] { l1, cmbCliente, l2, cmbVeiculo, l3, cmbServico, l4, cmbTipo,
+                lT, cmbTecnico, lPe, cmbPeca,
                 l5, txtItem, l6, txtQtd, l7, txtValorUnit, btnAdicionar, gridItens, lblTotal,
                 btnGerar, btnEditar, btnAprovar, btnConverter, btnExcluir, btnVisualizar, lblAviso,
                 grid });
@@ -178,6 +188,24 @@ namespace Soen___Torrezim
             cmbServico.SelectedIndex = 0;
         }
 
+        private void CarregarTecnicos()
+        {
+            cmbTecnico.Items.Clear();
+            cmbTecnico.Items.Add("(sem técnico)");
+            foreach (Tecnico t in TecnicoDAO.Listar(somenteAtivos: true))
+                cmbTecnico.Items.Add(new ComboTecnico { Id = t.Id, Nome = t.Nome, Comissao = t.ComissaoPercent });
+            cmbTecnico.SelectedIndex = 0;
+        }
+
+        private void CarregarPecas()
+        {
+            cmbPeca.Items.Clear();
+            cmbPeca.Items.Add("(sem peça/estoque)");
+            foreach (Produto p in ProdutoDAO.Listar())
+                cmbPeca.Items.Add(new ComboProduto { Id = p.Id, Nome = p.Nome, Qtd = p.QtdAtual });
+            cmbPeca.SelectedIndex = 0;
+        }
+
         private void PreencherItemDoCatalogo()
         {
             if (cmbServico.SelectedIndex > 0)
@@ -194,11 +222,19 @@ namespace Soen___Torrezim
             double qtd = 1;
             double.TryParse(txtQtd.Text, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-BR"), out qtd);
             double vu = (double)Validacoes.LerValor(txtValorUnit);
-            itensAtuais.Add(new OrcamentoItem { Descricao = txtItem.Text.Trim(), Quantidade = qtd, ValorUnit = vu });
+            var peca = cmbPeca.SelectedItem as ComboProduto;
+            itensAtuais.Add(new OrcamentoItem
+            {
+                Descricao = txtItem.Text.Trim(),
+                Quantidade = qtd,
+                ValorUnit = vu,
+                ProdutoId = peca != null ? peca.Id : (long?)null
+            });
             CarregarItens();
             txtItem.Clear();
             txtQtd.Text = "1";
             txtValorUnit.Clear();
+            cmbPeca.SelectedIndex = 0;
             txtItem.Focus();
         }
 
@@ -229,6 +265,7 @@ namespace Soen___Torrezim
                 foreach (OrcamentoItem it in itensAtuais) total += it.ValorTotal;
 
                 bool editando = _editandoId.HasValue;
+                var tec = cmbTecnico.SelectedIndex > 0 ? (ComboTecnico)cmbTecnico.SelectedItem : null;
                 var o = new Orcamento
                 {
                     Id = _editandoId ?? 0,
@@ -239,7 +276,9 @@ namespace Soen___Torrezim
                     Valor = total,
                     Status = status,
                     Tipo = cmbTipo.SelectedIndex == 1 ? "nota" : "orcamento",
-                    Numero = editando ? _editandoNumero : null
+                    Numero = editando ? _editandoNumero : null,
+                    TecnicoId = tec != null ? tec.Id : (long?)null,
+                    Comissao = tec != null ? total * (tec.Comissao / 100.0) : 0
                 };
                 ServicoDAO.SalvarOrcamento(o);
                 ServicoDAO.SalvarItensOrcamento(o.Id, itensAtuais);
@@ -259,7 +298,8 @@ namespace Soen___Torrezim
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erro: " + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao processar. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -285,6 +325,10 @@ namespace Soen___Torrezim
             if (o.VeiculoId.HasValue)
                 for (int i = 0; i < cmbVeiculo.Items.Count; i++)
                     if (((ComboVeiculo)cmbVeiculo.Items[i]).Veiculo.Id == o.VeiculoId.Value) { cmbVeiculo.SelectedIndex = i; break; }
+            // seleciona técnico
+            if (o.TecnicoId.HasValue)
+                for (int i = 0; i < cmbTecnico.Items.Count; i++)
+                    if (cmbTecnico.Items[i] is ComboTecnico && ((ComboTecnico)cmbTecnico.Items[i]).Id == o.TecnicoId.Value) { cmbTecnico.SelectedIndex = i; break; }
             // itens
             itensAtuais.Clear();
             itensAtuais.AddRange(ServicoDAO.ListarItensOrcamento(o.Id));
@@ -333,6 +377,41 @@ namespace Soen___Torrezim
                     CarregarOrcamentos();
                     return;
                 }
+            }
+        }
+
+        private void ConverterSel()
+        {
+            var id = Selecionado();
+            if (!id.HasValue) return;
+            Orcamento o = null;
+            foreach (Orcamento item in ServicoDAO.ListarOrcamentos())
+                if (item.Id == id.Value) { o = item; break; }
+            if (o == null) return;
+
+            if (o.Status != "aprovado")
+            {
+                MessageBox.Show("Aprove a OS antes de converter em venda.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            if (MessageBox.Show("Converter a OS " + (string.IsNullOrWhiteSpace(o.Numero) ? "nº " + o.Id : o.Numero) +
+                " em venda? A baixa de estoque das peças vinculadas será realizada.",
+                "Converter em venda", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            try
+            {
+                ServicoDAO.ConverterEmVenda(id.Value);
+                CarregarOrcamentos();
+                MessageBox.Show("OS convertida em venda! Caixa e estoque atualizados.", "SOEN",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                MessageBox.Show("Erro ao converter. Veja o log para detalhes.", "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
