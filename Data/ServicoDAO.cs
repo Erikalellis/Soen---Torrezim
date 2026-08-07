@@ -340,6 +340,10 @@ VALUES (@o, @d, @q, @vu, @p)";
             string refDoc = (string.IsNullOrWhiteSpace(o.Numero) ? "#" + o.Id : o.Numero);
             string docEstoque = "OS " + refDoc;
 
+            // Total da venda = soma dos itens (mantém caixa/recibo consistentes após edição).
+            double valorTotal = 0;
+            foreach (var it in itens) valorTotal += it.ValorUnit * it.Quantidade;
+
             // Tudo em UMA transação: venda + itens + caixa + baixa de estoque + status.
             using (var conn = Database.AbrirConexao())
             using (var tx = conn.BeginTransaction())
@@ -354,7 +358,7 @@ VALUES (@data,@cli,@vei,@valor,@forma,@obs)";
                     cmd.Parameters.AddWithValue("@data", Database.Nulo(o.Data));
                     cmd.Parameters.AddWithValue("@cli", (object)o.ClienteId ?? System.DBNull.Value);
                     cmd.Parameters.AddWithValue("@vei", (object)o.VeiculoId ?? System.DBNull.Value);
-                    cmd.Parameters.AddWithValue("@valor", o.Valor);
+                    cmd.Parameters.AddWithValue("@valor", valorTotal);
                     cmd.Parameters.AddWithValue("@forma", Database.Nulo(""));
                     cmd.Parameters.AddWithValue("@obs", "Gerada da OS " + refDoc);
                     cmd.ExecuteNonQuery();
@@ -378,14 +382,14 @@ VALUES (@vid,@desc,@q,@vu)";
                 }
 
                 // Entrada no caixa
-                if (o.Valor > 0)
+                if (valorTotal > 0)
                 {
                     using (var cmd = conn.CreateCommand())
                     {
                         cmd.Transaction = tx;
                         cmd.CommandText = "INSERT INTO caixa (tipo, descricao, valor) VALUES ('entrada', @desc, @valor)";
                         cmd.Parameters.AddWithValue("@desc", "Venda nº " + idVenda);
-                        cmd.Parameters.AddWithValue("@valor", o.Valor);
+                        cmd.Parameters.AddWithValue("@valor", valorTotal);
                         cmd.ExecuteNonQuery();
                     }
                 }
