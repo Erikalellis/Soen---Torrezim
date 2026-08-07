@@ -277,6 +277,14 @@ CREATE TABLE IF NOT EXISTS tecnicos (
     comissao_percent REAL DEFAULT 0,
     ativo      INTEGER DEFAULT 1
 );
+
+CREATE TABLE IF NOT EXISTS comissao_pagamentos (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    tecnico_id INTEGER NOT NULL REFERENCES tecnicos(id),
+    valor      REAL DEFAULT 0,
+    data       TEXT DEFAULT (datetime('now','localtime')),
+    observacao TEXT
+);
 ";
             }
         }

@@ -36,6 +36,10 @@ namespace Soen___Torrezim
             itemTempoTecnico.Click += (s, e) => new RelatorioTempoTecnico().Show();
             toolStripMenuItem5.DropDownItems.Add(itemTempoTecnico);
 
+            var itemPagamentoComissao = new ToolStripMenuItem("Pagamentos de Comissões");
+            itemPagamentoComissao.Click += (s, e) => new ComissoesPagamentos().Show();
+            toolStripMenuItem5.DropDownItems.Add(itemPagamentoComissao);
+
             var itemMargem = new ToolStripMenuItem("Margem por Serviço/Peça");
             itemMargem.Click += (s, e) => new RelatorioMargem().Show();
             toolStripMenuItem8.DropDownItems.Add(itemMargem);
