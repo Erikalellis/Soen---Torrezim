@@ -6,11 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Soen___Torrezim.Data;
 
 namespace Soen___Torrezim
 {
     public partial class FrmPrincipal : Form
     {
+        private System.Windows.Forms.Timer _timerBackup;
         public FrmPrincipal()
         {
             InitializeComponent();
@@ -304,6 +306,16 @@ namespace Soen___Torrezim
 
         private void FrmPrincipal_Load(object sender, EventArgs e)
         {
+            BackupAgendado.VerificarAgenda();
+            _timerBackup = new System.Windows.Forms.Timer { Interval = 3600000 };
+            _timerBackup.Tick += (s, ev) => BackupAgendado.VerificarAgenda();
+            _timerBackup.Start();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            try { BackupAgendado.VerificarAgenda(true); } catch { }
+            base.OnFormClosing(e);
         }
 
         private void statusStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)

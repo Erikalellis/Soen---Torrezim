@@ -102,6 +102,8 @@
     <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\UIHelpers.cs" />
     <Compile Include="Data\Database.cs" />
+    <Compile Include="Data\ConfigDAO.cs" />
+    <Compile Include="Data\BackupAgendado.cs" />
     <Compile Include="Data\ClienteDAO.cs" />
     <Compile Include="Data\VeiculoDAO.cs" />
     <Compile Include="Data\ManutencaoDAO.cs" />
