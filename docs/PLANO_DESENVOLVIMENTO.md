@@ -55,11 +55,13 @@ depois que a anterior estiver funcionando e atualizada nos documentos.
 - [x] Configuração de Notificações
 
 ## Fase 9 — Integração com Contabilidade (concluída ✔)
-- [x] Exportação de dados contábeis
+- [x] Exportação de dados contábeis (CSV)
 - [x] Relatórios fiscais
 
 ## Fase 10 — Segurança (concluída ✔)
 - [x] Login de usuários (com usuário admin padrão no 1º uso)
+- [x] Senhas com hash PBKDF2 (salt + iterações) — com upgrade automático de hashes antigos
+- [x] Perfis `admin` e `operador` com permissões por perfil
 
 ## Fase 11 — Módulos de Oficina / Gestão (concluída ✔)
 - [x] Técnicos (CRUD, cargo, comissão %)
@@ -70,18 +72,44 @@ depois que a anterior estiver funcionando e atualizada nos documentos.
 - [x] Recibo/Nota de Venda (impressão)
 - [x] Recibo de Lançamento de Caixa (impressão)
 
+## Fase 12 — Relatórios gerenciais avançados (concluída ✔)
+- [x] Análise Gerencial / Desempenho (indicadores globais)
+- [x] Tempo Médio de Atendimento por Técnico
+- [x] Pagamentos de Comissões por Técnico (gerado − pago + histórico)
+- [x] Exportação CSV/PDF/Excel e impressão de relatórios
+
+## Fase 13 — Ferramentas e automação (concluída ✔)
+- [x] Empresa Configurável (dados + imagem de fundo + logo nos documentos)
+- [x] Configuração de Impressora padrão (com página de teste)
+- [x] Backup manual e restauração
+- [x] Backup automático agendado (diário / semanal / ao sair, com retenção de N cópias)
+- [x] Pesquisa Global (Ctrl+F) em clientes, veículos, orçamentos/OS e vendas
+- [x] Calendário de Agendamentos
+- [x] Gerenciamento de Horários (reagendamento em lote)
+- [x] Notificações / Lembretes / Confirmação de Serviços
+- [x] Histórico completo do Cliente (abas + imprimir/exportar)
+
+## Fase 14 — Distribuição e atualização (concluída ✔)
+- [x] Pasta `dist/conteudo` + Zip de distribuição (sem `soen.db`/`Backups`)
+- [x] Auto-update via GitHub Releases (`Erikalellis/Soen---Torrezim`) com TLS 1.2
+- [x] Script `publicar.ps1` (bump de versão → build → zip → tag → release)
+- [x] Instalação portátil local e em rede (Nolt-DDS e Erika-pc/Windows 10)
+- [x] Teste de atualização de ponta a ponta (v1.1.0 → v1.1.1)
+
 ---
 ## Critério de "pronto"
 Um módulo é considerado pronto quando:
 1. Salva/consulta/edita/exclui de verdade no banco;
 2. O menu está ligado à tela;
 3. `docs/MAPA_MENU.md` e `docs/BANCO_DE_DADOS.md` estão atualizados;
-4. Foi feito commit no git.
+4. Foi feito commit no git;
+5. (Fase 14+) Passou por teste em máquina Windows 10 (Erika-pc) antes de ir a produção.
 
 ## Backlog / ideias futuras
 - [ ] NF-e / NFC-e (emissão fiscal completa com envio à SEFAZ)
 - [ ] Orçamento/OS com avaliação por imagem (fotos do veículo)
-- [ ] Backup automático agendado
 - [ ] Notificações por WhatsApp/sms de lembrete de revisão
-- [ ] Relatório de tempo médio de atendimento por técnico
-- [ ] Controle de comissão com pagamento registrado (quitação por técnico)
+- [ ] Impressão de boleto/carne de contas a pagar/receber
+- [ ] Multi-caixa ou abertura/fechamento com usuário responsável
+- [ ] Migração para SQL Server/PostgreSQL quando crescer (padrão DAO já facilita)
+- [ ] Tela de auditoria de ações por usuário (log de eventos)
