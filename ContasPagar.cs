@@ -242,7 +242,10 @@ namespace Soen___Torrezim
                 {
                     c.Status = status;
                     if (status == "pago" && string.IsNullOrWhiteSpace(c.DataPagamento))
+                    {
                         c.DataPagamento = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+                        FinanceiroDAO.LancarPagamentoNoCaixa(c.Id, c.Tipo, c.Descricao, c.Valor);
+                    }
                     FinanceiroDAO.Salvar(c);
                     break;
                 }

@@ -78,12 +78,15 @@ VALUES (@vid,@desc,@qtd,@unit)";
                 {
                     if (v.ValorTotal > 0)
                         InserirLancamentoCaixa(conn, tx, idVenda, v.ValorTotal);
+                    TratarReceberFiado(conn, tx, idVenda, v);
                 }
                 else
                 {
                     RemoverLancamentoCaixa(conn, tx, idVenda);
                     if (v.ValorTotal > 0)
                         InserirLancamentoCaixa(conn, tx, idVenda, v.ValorTotal);
+                    RemoverReceberVenda(conn, tx, idVenda);
+                    TratarReceberFiado(conn, tx, idVenda, v);
                 }
 
                 tx.Commit();
@@ -111,6 +114,50 @@ VALUES ('entrada', @desc, @valor)";
                 c.Transaction = tx;
                 c.CommandText = "DELETE FROM caixa WHERE descricao=@desc";
                 c.Parameters.AddWithValue("@desc", "Venda nº " + idVenda);
+                c.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Vendas pagas "Fiado" mantêm o lançamento de entrada no caixa
+        /// (registro de que o valor é devido) e também geram uma conta a
+        /// receber, com vencimento padrão de 30 dias, para o controle
+        /// financeiro. Nada é feito se a forma de pagamento não for Fiado.
+        /// </summary>
+        private static void TratarReceberFiado(SQLiteConnection conn, SQLiteTransaction tx, long idVenda, Venda v)
+        {
+            bool fiado = !string.IsNullOrWhiteSpace(v.FormaPagamento) &&
+                         v.FormaPagamento.Trim().Equals("Fiado", System.StringComparison.OrdinalIgnoreCase);
+            if (!fiado || v.ValorTotal <= 0) return;
+
+            string vencimento = System.DateTime.Now.AddDays(30).ToString("yyyy-MM-dd");
+            string nomeCliente = v.NomeCliente;
+            if (string.IsNullOrWhiteSpace(nomeCliente) && v.ClienteId.HasValue)
+            {
+                var cliente = ClienteDAO.BuscarPorId(v.ClienteId.Value);
+                if (cliente != null) nomeCliente = cliente.NomeRazao;
+            }
+            using (var c = conn.CreateCommand())
+            {
+                c.Transaction = tx;
+                c.CommandText = @"INSERT INTO financeiro
+    (tipo, descricao, fornecedor, vencimento, valor, status, data_pagamento)
+    VALUES ('receber', @desc, @cliente, @venc, @valor, 'em_aberto', NULL)";
+                c.Parameters.AddWithValue("@desc", "Venda nº " + idVenda + " (fiado)");
+                c.Parameters.AddWithValue("@cliente", Database.Nulo(nomeCliente));
+                c.Parameters.AddWithValue("@venc", vencimento);
+                c.Parameters.AddWithValue("@valor", v.ValorTotal);
+                c.ExecuteNonQuery();
+            }
+        }
+
+        private static void RemoverReceberVenda(SQLiteConnection conn, SQLiteTransaction tx, long idVenda)
+        {
+            using (var c = conn.CreateCommand())
+            {
+                c.Transaction = tx;
+                c.CommandText = "DELETE FROM financeiro WHERE descricao=@desc AND status<>'pago'";
+                c.Parameters.AddWithValue("@desc", "Venda nº " + idVenda + " (fiado)");
                 c.ExecuteNonQuery();
             }
         }

@@ -91,6 +91,37 @@ VALUES (@tipo, @desc, @forn, @venc, @valor, @status, @data_pag)";
             }
         }
 
+        /// <summary>
+        /// Lança no caixa o pagamento/recebimento efetivo de uma conta,
+        /// de forma idempotente (não duplica se a conta já gerou lançamento).
+        /// "pagar" vira saída; "receber" vira entrada.
+        /// </summary>
+        public static void LancarPagamentoNoCaixa(long contaId, string tipo, string descricao, double valor)
+        {
+            if (valor <= 0) return;
+            using (var conn = Database.AbrirConexao())
+            {
+                string padrao = "Pagamento conta " + contaId;
+
+                using (var check = conn.CreateCommand())
+                {
+                    check.CommandText = "SELECT COUNT(*) FROM caixa WHERE descricao LIKE @p";
+                    check.Parameters.AddWithValue("@p", padrao + "%");
+                    if ((long)check.ExecuteScalar() > 0) return;
+                }
+
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "INSERT INTO caixa (data, tipo, descricao, valor) VALUES (@data,@tipo,@desc,@valor)";
+                    cmd.Parameters.AddWithValue("@data", System.DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
+                    cmd.Parameters.AddWithValue("@tipo", tipo == "pagar" ? "saida" : "entrada");
+                    cmd.Parameters.AddWithValue("@desc", padrao + " - " + (descricao ?? ""));
+                    cmd.Parameters.AddWithValue("@valor", valor);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
         private static string LerStr(SQLiteDataReader r, string col)
         {
             int i = r.GetOrdinal(col);
