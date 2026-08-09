@@ -124,19 +124,26 @@ namespace Soen___Torrezim
             foreach (var v in vendas) if ((v.Data ?? "").StartsWith(hoje)) { vendasHoje++; totalHoje += v.ValorTotal; }
             lblVendasHoje.Text = "Vendas hoje\n" + vendasHoje + " — R$ " + totalHoje.ToString("N2", cult);
 
-            // Saldo caixa
+            // Saldo caixa + status aberto/fechado
             double saldo = 0;
             foreach (var c in caixa) saldo += (c.Tipo == "saida" ? -c.Valor : c.Valor);
-            lblSaldoCaixa.Text = "Caixa atual\nR$ " + saldo.ToString("N2", cult);
+            string statusCaixa = ConfigDAO.Obter("caixa_fechado", "") == hoje ? "FECHADO" : "aberto";
+            lblSaldoCaixa.Text = "Caixa (" + statusCaixa + ")\nR$ " + saldo.ToString("N2", cult);
 
-            // Contas a receber em aberto
+            // Contas a receber em aberto + a vencer nos próximos 7 dias
             double aReceber = 0; int qtReceber = 0;
+            int aVencer7Dias = 0;
             foreach (var c in contas)
             {
-                if (c.Tipo != "receber" || c.Status == "pago" || c.Status == "cancelado") continue;
-                aReceber += c.Valor; qtReceber++;
+                if (c.Status == "pago" || c.Status == "cancelado") continue;
+                DateTime dv;
+                if (c.Tipo == "receber") { aReceber += c.Valor; qtReceber++; }
+                if (DateTime.TryParse(c.Vencimento, out dv) &&
+                    dv.Date >= DateTime.Today && dv.Date <= DateTime.Today.AddDays(7))
+                    aVencer7Dias++;
             }
-            lblReceber.Text = "Contas a receber (aberto)\n" + qtReceber + " — R$ " + aReceber.ToString("N2", cult);
+            lblReceber.Text = "Contas a receber (aberto)\n" + qtReceber + " — R$ " + aReceber.ToString("N2", cult) +
+                "\n• " + aVencer7Dias + " a vencer em 7 dias";
 
             // Faturamento do mês (todas as vendas do mês atual, incluindo OS convertidas)
             string mesAtual = DateTime.Now.ToString("yyyy-MM");

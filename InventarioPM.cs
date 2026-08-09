@@ -27,6 +27,7 @@ namespace Soen___Torrezim
         private Button btnSalvar;
         private Button btnNovo;
         private Button btnExcluir;
+        private Button btnExportarCsv;
         private ToolStripStatusLabel lblStatus;
 
         private long? _produtoEdicao;
@@ -77,6 +78,7 @@ namespace Soen___Torrezim
             btnSalvar = Botao("Salvar Produto", 12, y, (s, e) => SalvarProduto());
             btnNovo = Botao("Limpar", 120, y, (s, e) => LimparFormularioProduto());
             btnExcluir = Botao("Excluir Selecionado", 210, y, (s, e) => ExcluirProduto());
+            btnExportarCsv = Botao("Exportar CSV", 320, y, (s, e) => ExportarCsv());
             y += 34;
 
             grid = new DataGridView
@@ -106,7 +108,7 @@ namespace Soen___Torrezim
 
             Controls.AddRange(new Control[] { txtBusca, btnBuscar, btnTodos, l1, txtCodigo, l2, txtNome,
                 l3, txtCategoria, l4, txtUnidade, l5, txtCusto, l6, txtPreco,
-                btnSalvar, btnNovo, btnExcluir, grid });
+                btnSalvar, btnNovo, btnExcluir, btnExportarCsv, grid });
         }
 
         private Button Botao(string texto, int x, int y, EventHandler clique = null)
@@ -207,6 +209,56 @@ namespace Soen___Torrezim
             txtCodigo.Clear(); txtNome.Clear(); txtCategoria.Clear(); txtUnidade.Text = "un";
             txtCusto.Clear(); txtPreco.Clear();
             txtNome.Focus();
+        }
+
+        private void ExportarCsv()
+        {
+            List<Produto> lista = ProdutoDAO.Listar(txtBusca.Text.Trim());
+            if (lista.Count == 0)
+            {
+                MessageBox.Show("Nenhum produto para exportar.", "Exportar CSV",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var dlg = new SaveFileDialog
+            {
+                Filter = "Arquivo CSV (*.csv)|*.csv",
+                DefaultExt = "csv",
+                FileName = "inventario_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + ".csv"
+            })
+            {
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("Codigo;Nome;Categoria;Qtd;Unidade;Custo;Preco");
+                var cult = CultureInfo.GetCultureInfo("pt-BR");
+                foreach (var p in lista)
+                    sb.AppendLine(string.Join(";",
+                        Csv(p.Codigo), Csv(p.Nome), Csv(p.Categoria),
+                        p.QtdAtual.ToString("0.##", cult), p.Unidade,
+                        p.Custo.ToString("N2", cult), p.Preco.ToString("N2", cult)));
+
+                try
+                {
+                    System.IO.File.WriteAllText(dlg.FileName, sb.ToString(), new System.Text.UTF8Encoding(true));
+                    MessageBox.Show("Inventário exportado com " + lista.Count + " produto(s).\n" + dlg.FileName,
+                        "Exportar CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Erro ao exportar: " + ex.Message, "Erro",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private static string Csv(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return "";
+            return s.Contains(";") || s.Contains("\"") || s.Contains("\n")
+                ? "\"" + s.Replace("\"", "\"\"") + "\""
+                : s;
         }
 
         private static double Parse(string s)

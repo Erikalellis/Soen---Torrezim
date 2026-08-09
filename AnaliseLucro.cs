@@ -15,6 +15,8 @@ namespace Soen___Torrezim
         private DataGridView grid;
         private Chart chart;
         private Button btnRecalcular;
+        private DateTimePicker dtpInicio;
+        private DateTimePicker dtpFim;
         private Label lblVendas;
         private Label lblSaidas;
         private Label lblAReceber;
@@ -25,7 +27,7 @@ namespace Soen___Torrezim
         {
             InitializeComponent();
             Text = "Soen - Análise de Margem de Lucro";
-            ClientSize = new Size(940, 520);
+            ClientSize = new Size(940, 540);
             StartPosition = FormStartPosition.CenterParent;
             BackColor = SystemColors.GradientInactiveCaption;
             CriarInterface();
@@ -44,17 +46,43 @@ namespace Soen___Torrezim
             btnRecalcular = UIHelpers.CreateButton("Recalcular", new Point(12, 150), new Size(120, 28));
             btnRecalcular.Click += (s, e) => Recalcular();
 
-            chart = new Chart { Location = new Point(400, 12), Size = new Size(340, 230), BackColor = Color.Transparent };
+            // Filtro por período (lado direito, acima do gráfico)
+            var lIni = new Label { Text = "De:", AutoSize = true, Location = new Point(420, 16) };
+            dtpInicio = new DateTimePicker
+            {
+                Location = new Point(452, 13),
+                Size = new Size(110, 20),
+                Format = DateTimePickerFormat.Short,
+                Value = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
+            };
+            var lFim = new Label { Text = "Até:", AutoSize = true, Location = new Point(580, 16) };
+            dtpFim = new DateTimePicker
+            {
+                Location = new Point(612, 13),
+                Size = new Size(110, 20),
+                Format = DateTimePickerFormat.Short,
+                Value = DateTime.Today
+            };
+            var lPeriodo = new Label
+            {
+                Text = "Período analisado (vendas, caixa e vencimentos)",
+                AutoSize = true,
+                Location = new Point(420, 44),
+                Font = new Font("Segoe UI", 8.5F, FontStyle.Italic),
+                ForeColor = SystemColors.GrayText
+            };
+
+            chart = new Chart { Location = new Point(420, 68), Size = new Size(360, 230), BackColor = Color.Transparent };
             chart.ChartAreas.Add(new ChartArea());
             chart.ChartAreas[0].AxisX.Title = "Indicador";
             chart.ChartAreas[0].AxisY.Title = "R$";
             chart.Series.Add(new Series { ChartType = SeriesChartType.Column, LegendText = "Indicadores" });
-            chart.Size = new Size(340, 210);
+            chart.Size = new Size(360, 220);
 
             grid = new DataGridView
             {
                 Location = new Point(12, 190),
-                Size = new Size(720, 300),
+                Size = new Size(912, 330),
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 AllowUserToAddRows = false,
@@ -65,7 +93,8 @@ namespace Soen___Torrezim
             grid.Columns.Add("Indicador", "Indicador");
             grid.Columns.Add("Valor", "Valor");
 
-            Controls.AddRange(new Control[] { lblVendas, lblSaidas, lblAReceber, lblAPagar, lblLucro, btnRecalcular, chart, grid });
+            Controls.AddRange(new Control[] { lblVendas, lblSaidas, lblAReceber, lblAPagar, lblLucro, btnRecalcular,
+                lIni, dtpInicio, lFim, dtpFim, lPeriodo, chart, grid });
         }
 
         private Label NovoLbl(int y)
@@ -76,14 +105,20 @@ namespace Soen___Torrezim
         private void Recalcular()
         {
             var cult = CultureInfo.GetCultureInfo("pt-BR");
+            DateTime ini = dtpInicio.Value.Date;
+            DateTime fim = dtpFim.Value.Date;
 
             double vendas = 0, saidas = 0;
-            foreach (Venda v in VendaDAO.Listar(null)) vendas += v.ValorTotal;
+            foreach (Venda v in VendaDAO.Listar(null))
+                if (Dentro(v.Data, ini, fim)) vendas += v.ValorTotal;
             foreach (LancamentoCaixa l in CaixaDAO.Listar())
-                if (l.Tipo == "saida") saidas += l.Valor;
+                if (Dentro(l.Data, ini, fim) && l.Tipo == "saida") saidas += l.Valor;
 
-            double aReceber = FinanceiroDAO.TotalAberto("receber");
-            double aPagar = FinanceiroDAO.TotalAberto("pagar");
+            double aReceber = 0, aPagar = 0;
+            foreach (ContaFinanceira c in FinanceiroDAO.Listar("receber"))
+                if (EmAbertoNoPeriodo(c, ini, fim)) aReceber += c.Valor;
+            foreach (ContaFinanceira c in FinanceiroDAO.Listar("pagar"))
+                if (EmAbertoNoPeriodo(c, ini, fim)) aPagar += c.Valor;
 
             lblVendas.Text = "Total de Vendas:          " + vendas.ToString("N2", cult);
             lblSaidas.Text = "Despesas (saídas caixa):  " + saidas.ToString("N2", cult);
@@ -94,6 +129,7 @@ namespace Soen___Torrezim
             lblLucro.Text = "Margem / Lucro estimado:  " + lucro.ToString("N2", cult);
 
             grid.Rows.Clear();
+            grid.Rows.Add("Período", ini.ToString("dd/MM/yyyy") + " até " + fim.ToString("dd/MM/yyyy"));
             grid.Rows.Add("Receitas (vendas)", vendas.ToString("N2", cult));
             grid.Rows.Add("Despesas (saídas)", saidas.ToString("N2", cult));
             grid.Rows.Add("A receber (aberto)", aReceber.ToString("N2", cult));
@@ -106,6 +142,21 @@ namespace Soen___Torrezim
             chart.Series[0].Points.AddXY("A Receber", aReceber);
             chart.Series[0].Points.AddXY("A Pagar", aPagar);
             chart.Series[0].Points.AddXY("Lucro", lucro);
+        }
+
+        private static bool Dentro(string dataStr, DateTime ini, DateTime fim)
+        {
+            DateTime d;
+            return !string.IsNullOrWhiteSpace(dataStr) && DateTime.TryParse(dataStr, out d) &&
+                   d.Date >= ini && d.Date <= fim;
+        }
+
+        private static bool EmAbertoNoPeriodo(ContaFinanceira c, DateTime ini, DateTime fim)
+        {
+            if (c.Status == "pago" || c.Status == "cancelado") return false;
+            DateTime d;
+            return !string.IsNullOrWhiteSpace(c.Vencimento) && DateTime.TryParse(c.Vencimento, out d) &&
+                   d.Date >= ini && d.Date <= fim;
         }
     }
 }

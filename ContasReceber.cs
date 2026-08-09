@@ -15,17 +15,23 @@ namespace Soen___Torrezim
         private TextBox txtCliente;
         private DateTimePicker dtpVencimento;
         private TextBox txtValor;
+        private TextBox txtParcelas;
         private Button btnAdicionar;
         private Button btnReceber;
+        private Button btnEditar;
+        private Button btnCancelarEdicao;
         private Button btnExcluir;
         private DataGridView grid;
         private ToolStripStatusLabel lblStatus;
+
+        private long? _contaEdicao;
+        private ContaFinanceira _baseConta;
 
         public ContasReceber()
         {
             InitializeComponent();
             Text = "Soen - Contas a Receber";
-            ClientSize = new Size(820, 460);
+            ClientSize = new Size(840, 460);
             StartPosition = FormStartPosition.CenterParent;
             BackColor = SystemColors.GradientInactiveCaption;
             CriarInterface();
@@ -47,17 +53,25 @@ namespace Soen___Torrezim
             var l4 = new Label { Text = "Valor (R$):", AutoSize = true, Location = new Point(230, 50) };
             txtValor = new TextBox { Location = new Point(310, 47), Size = new Size(120, 20) };
 
+            var l5 = new Label { Text = "Parcelas:", AutoSize = true, Location = new Point(460, 50) };
+            txtParcelas = new TextBox { Location = new Point(525, 47), Size = new Size(40, 20), Text = "1" };
+
             btnAdicionar = UIHelpers.CreateButton("Adicionar Conta", new Point(12, 90), new Size(130, 28));
             btnAdicionar.Click += (s, e) => SalvarConta();
             btnReceber = UIHelpers.CreateButton("Marcar Recebido Sel.", new Point(152, 90), new Size(140, 28));
             btnReceber.Click += (s, e) => AlterarStatus("pago");
-            btnExcluir = UIHelpers.CreateButton("Excluir Sel.", new Point(302, 90), new Size(110, 28));
+            btnEditar = UIHelpers.CreateButton("Editar Sel.", new Point(302, 90), new Size(110, 28));
+            btnEditar.Click += (s, e) => CarregarParaEdicao();
+            btnCancelarEdicao = UIHelpers.CreateButton("Cancelar Edição", new Point(422, 90), new Size(130, 28));
+            btnCancelarEdicao.Enabled = false;
+            btnCancelarEdicao.Click += (s, e) => CancelarEdicao();
+            btnExcluir = UIHelpers.CreateButton("Excluir Sel.", new Point(562, 90), new Size(110, 28));
             btnExcluir.Click += (s, e) => Excluir();
 
             grid = new DataGridView
             {
                 Location = new Point(12, 132),
-                Size = new Size(790, 304),
+                Size = new Size(812, 304),
                 ReadOnly = true,
                 MultiSelect = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
@@ -78,7 +92,7 @@ namespace Soen___Torrezim
             lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] { l1, txtDescricao, l2, txtCliente, l3, dtpVencimento, l4, txtValor,
-                btnAdicionar, btnReceber, btnExcluir, grid });
+                l5, txtParcelas, btnAdicionar, btnReceber, btnEditar, btnCancelarEdicao, btnExcluir, grid });
         }
 
         private void Carregar()
@@ -95,21 +109,125 @@ namespace Soen___Torrezim
 
         private void SalvarConta()
         {
+            if (_contaEdicao.HasValue) { SalvarEdicao(); return; }
+
             double valor;
             double.TryParse(txtValor.Text, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-BR"), out valor);
+            if (valor <= 0)
+            {
+                MessageBox.Show("Informe um valor válido.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            int parcelas;
+            if (!int.TryParse(txtParcelas.Text, out parcelas) || parcelas < 1)
+            {
+                MessageBox.Show("Informe a quantidade de parcelas (mínimo 1).", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DateTime venc = dtpVencimento.Value.Date;
+            if (parcelas == 1)
+            {
+                SalvarParcela(1, parcelas, venc, valor);
+            }
+            else
+            {
+                double porParcela = Math.Round(valor / parcelas, 2);
+                double totalParcelas = porParcela * parcelas;
+                double ajuste = Math.Round(valor - totalParcelas, 2);
+                for (int i = 0; i < parcelas; i++)
+                {
+                    double v = (i == parcelas - 1) ? porParcela + ajuste : porParcela;
+                    SalvarParcela(i + 1, parcelas, venc.AddMonths(i), v);
+                }
+            }
+
+            Carregar();
+            LimparCampos(false);
+        }
+
+        private void SalvarParcela(int numero, int total, DateTime venc, double valor)
+        {
             var c = new ContaFinanceira
             {
+                Tipo = "receber",
+                Descricao = txtDescricao.Text.Trim() + (total > 1 ? " (parc. " + numero + "/" + total + ")" : ""),
+                Fornecedor = txtCliente.Text.Trim(),
+                Vencimento = venc.ToString("yyyy-MM-dd"),
+                Valor = valor
+            };
+            FinanceiroDAO.Salvar(c);
+        }
+
+        private void CarregarParaEdicao()
+        {
+            var id = ContaSelecionada();
+            if (!id.HasValue) return;
+            List<ContaFinanceira> lista = FinanceiroDAO.Listar("receber");
+            foreach (var c in lista)
+            {
+                if (c.Id != id.Value) continue;
+                _contaEdicao = c.Id;
+                _baseConta = c;
+                txtDescricao.Text = c.Descricao;
+                txtCliente.Text = c.Fornecedor;
+                DateTime d;
+                if (DateTime.TryParse(c.Vencimento, out d))
+                    dtpVencimento.Value = d;
+                txtValor.Text = c.Valor.ToString("N2", CultureInfo.GetCultureInfo("pt-BR"));
+                txtParcelas.Enabled = false;
+                btnAdicionar.Text = "Salvar Alterações";
+                btnCancelarEdicao.Enabled = true;
+                break;
+            }
+        }
+
+        private void CancelarEdicao()
+        {
+            LimparCampos(true);
+        }
+
+        private void LimparCampos(bool cancelarEdicao)
+        {
+            txtDescricao.Clear();
+            txtCliente.Clear();
+            txtValor.Clear();
+            if (cancelarEdicao)
+            {
+                _contaEdicao = null;
+                _baseConta = null;
+                txtParcelas.Enabled = true;
+                txtParcelas.Text = "1";
+                btnAdicionar.Text = "Adicionar Conta";
+                btnCancelarEdicao.Enabled = false;
+            }
+        }
+
+        private void SalvarEdicao()
+        {
+            double valor;
+            if (!double.TryParse(txtValor.Text, NumberStyles.Any, CultureInfo.GetCultureInfo("pt-BR"), out valor) || valor <= 0)
+            {
+                MessageBox.Show("Informe um valor válido.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var c = new ContaFinanceira
+            {
+                Id = _contaEdicao.Value,
                 Tipo = "receber",
                 Descricao = txtDescricao.Text.Trim(),
                 Fornecedor = txtCliente.Text.Trim(),
                 Vencimento = dtpVencimento.Value.ToString("yyyy-MM-dd"),
-                Valor = valor
+                Valor = valor,
+                Status = _baseConta?.Status ?? "em_aberto",
+                DataPagamento = _baseConta?.DataPagamento
             };
             FinanceiroDAO.Salvar(c);
+            LimparCampos(true);
             Carregar();
-            txtDescricao.Clear();
-            txtCliente.Clear();
-            txtValor.Clear();
         }
 
         private void AlterarStatus(string status)
@@ -133,7 +251,12 @@ namespace Soen___Torrezim
 
         private long? ContaSelecionada()
         {
-            if (grid.SelectedRows.Count == 0) return null;
+            if (grid.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Selecione uma conta na lista.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return null;
+            }
             return Convert.ToInt64(grid.SelectedRows[0].Cells["Id"].Value);
         }
 
