@@ -29,6 +29,15 @@ namespace Soen___Torrezim
             textBox13.TextChanged += (s, e) => Validacoes.AplicarMascaraTelefone(textBox13);
             textBox14.TextChanged += (s, e) => Validacoes.AplicarMascaraTelefone(textBox14);
             textBox5.TextChanged += (s, e) => Validacoes.AplicarMascaraCep(textBox5);
+
+            // Atalhos de teclado: F2 salva, F5 limpa, Esc fecha.
+            KeyPreview = true;
+            KeyDown += (s, e) =>
+            {
+                if (e.KeyCode == Keys.F2) button1.PerformClick();
+                else if (e.KeyCode == Keys.F5) LimparCampos();
+                else if (e.KeyCode == Keys.Escape) Close();
+            };
         }
 
         // Abre o cadastro já preenchido com um cliente existente (modo edição).
@@ -107,6 +116,16 @@ namespace Soen___Torrezim
                 if (!valido)
                 {
                     MessageBox.Show("CPF/CNPJ inválido. Verifique os números digitados.", "Atenção",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    textBox1.Focus();
+                    return;
+                }
+
+                long idAtual = _cliente != null ? _cliente.Id : 0;
+                if (ClienteDAO.ExisteCpfCnpj(cpfCnpj, idAtual))
+                {
+                    MessageBox.Show("Já existe um cadastro com este CPF/CNPJ. " +
+                        "Não é permitido duplicar cadastro.", "Atenção",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     textBox1.Focus();
                     return;

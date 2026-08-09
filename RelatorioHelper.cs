@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using Soen___Torrezim.Common;
 using Soen___Torrezim.Data;
 using Soen___Torrezim.Models;
 
@@ -96,12 +97,14 @@ namespace Soen___Torrezim
             using (var doc = new PrintDocument())
             {
                 AplicarImpressoraPadrao(doc);
-                var render = new DocPrinter(linhas);
+                ConfigurarA4(doc);
+                var render = new DocPrinter(linhas, CarregarLogo(emp));
                 doc.PrintPage += render.ImprimirPagina;
                 using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
                 {
                     prev.ShowDialog();
                 }
+                render.ReleaseLogo();
             }
         }
 
@@ -149,12 +152,77 @@ namespace Soen___Torrezim
             using (var doc = new PrintDocument())
             {
                 AplicarImpressoraPadrao(doc);
-                var render = new DocPrinter(linhas);
+                ConfigurarA4(doc);
+                var render = new DocPrinter(linhas, CarregarLogo(emp));
                 doc.PrintPage += render.ImprimirPagina;
                 using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
                 {
                     prev.ShowDialog();
                 }
+                render.ReleaseLogo();
+            }
+        }
+
+        /// <summary>Fechamento/resumo diário do caixa: lista os movimentos do dia,
+        /// totais de entradas/saídas, saldo do dia e saldo acumulado.</summary>
+        public static void VisualizarResumoCaixa(DateTime dia, System.Collections.Generic.List<Models.LancamentoCaixa> movs)
+        {
+            if (movs == null) return;
+            var cult = CultureInfo.GetCultureInfo("pt-BR");
+            Empresa emp = EmpresaDAO.Obter();
+            string nomeEmpresa = string.IsNullOrWhiteSpace(emp.Nome) ? "Soen - Sistema de Gestão" : emp.Nome;
+
+            double entradas = 0, saidas = 0;
+            foreach (var l in movs)
+            {
+                if (l.Tipo == "entrada") entradas += l.Valor; else saidas += l.Valor;
+            }
+            double saldoDia = entradas - saidas;
+            double saldoGeral = CaixaDAO.Saldo();
+
+            var linhas = new List<DocLine>();
+            linhas.Add(new DocLine(nomeEmpresa, DocStyle.Titulo));
+            if (!string.IsNullOrWhiteSpace(emp.Endereco) || !string.IsNullOrWhiteSpace(emp.Telefone))
+                linhas.Add(new DocLine(ContatoEmpresa(emp), DocStyle.Normal));
+            linhas.Add(new DocLine("FECHAMENTO DO CAIXA", DocStyle.Subtitulo));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("Dia: " + dia.ToString("dddd, dd/MM/yyyy", cult), DocStyle.Normal));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("MOVIMENTAÇÕES", DocStyle.Secao));
+            if (movs.Count == 0)
+                linhas.Add(new DocLine("Nenhum lançamento neste dia.", DocStyle.Normal));
+            foreach (var l in movs)
+            {
+                string tipo = l.Tipo == "entrada" ? "ENTRADA" : "SAÍDA";
+                linhas.Add(new DocLine(l.Data + "   " + tipo + "   " + l.Descricao +
+                    "   = R$ " + l.Valor.ToString("N2", cult), DocStyle.Normal));
+            }
+
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("Entradas do dia:  R$ " + entradas.ToString("N2", cult), DocStyle.Normal));
+            linhas.Add(new DocLine("Saídas do dia:    R$ " + saidas.ToString("N2", cult), DocStyle.Normal));
+            linhas.Add(new DocLine("Saldo do dia:     R$ " + saldoDia.ToString("N2", cult), DocStyle.Destaque));
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("Saldo acumulado do caixa:  R$ " + saldoGeral.ToString("N2", cult), DocStyle.Destaque));
+
+            linhas.Add(new DocLine("", DocStyle.Normal));
+            linhas.Add(new DocLine("_______________________________________________", DocStyle.Normal));
+            linhas.Add(new DocLine(nomeEmpresa, DocStyle.Normal));
+            if (!string.IsNullOrWhiteSpace(emp.Email) || !string.IsNullOrWhiteSpace(emp.Site))
+                linhas.Add(new DocLine(ContatoRodape(emp), DocStyle.Normal));
+
+            using (var dlg = new PrintDialog())
+            using (var doc = new PrintDocument())
+            {
+                AplicarImpressoraPadrao(doc);
+                ConfigurarA4(doc);
+                var render = new DocPrinter(linhas, CarregarLogo(emp));
+                doc.PrintPage += render.ImprimirPagina;
+                using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
+                {
+                    prev.ShowDialog();
+                }
+                render.ReleaseLogo();
             }
         }
 
@@ -234,12 +302,14 @@ namespace Soen___Torrezim
             using (var doc = new PrintDocument())
             {
                 AplicarImpressoraPadrao(doc);
-                var render = new DocPrinter(linhas);
+                ConfigurarA4(doc);
+                var render = new DocPrinter(linhas, CarregarLogo(emp));
                 doc.PrintPage += render.ImprimirPagina;
                 using (var prev = new PrintPreviewDialog { Document = doc, Width = 700, Height = 800 })
                 {
                     prev.ShowDialog();
                 }
+                render.ReleaseLogo();
             }
         }
 
@@ -256,13 +326,35 @@ namespace Soen___Torrezim
         private class DocPrinter
         {
             private readonly List<DocLine> _linhas;
+            private readonly Image _logo;
+            private readonly float _logoExtra;
             private int _linha = 0;
+            private bool _primeiraPagina = true;
 
-            public DocPrinter(List<DocLine> linhas) { _linhas = linhas; }
+            public DocPrinter(List<DocLine> linhas, Image logo)
+            {
+                _linhas = linhas;
+                _logo = logo;
+                _logoExtra = logo != null ? 74f : 0f;
+            }
+
+            /// <summary>Libera a imagem do logo após a visualização/impressão.</summary>
+            public void ReleaseLogo()
+            {
+                if (_logo != null) _logo.Dispose();
+            }
 
             public void ImprimirPagina(object sender, PrintPageEventArgs e)
             {
-                float y = e.MarginBounds.Top;
+                bool usaLogo = _logo != null && _primeiraPagina;
+                if (usaLogo)
+                {
+                    try { e.Graphics.DrawImage(_logo, e.MarginBounds.Left, e.MarginBounds.Top, 100f, 64f); }
+                    catch { }
+                }
+                _primeiraPagina = false;
+
+                float y = e.MarginBounds.Top + (usaLogo ? _logoExtra : 0f);
                 float maxY = e.MarginBounds.Bottom;
                 float largura = e.MarginBounds.Width;
 
@@ -356,6 +448,71 @@ namespace Soen___Torrezim
             }
         }
 
+        public static void ExportarExcel(DataGridView grid, string nomeSugerido)
+        {
+            if (grid.Columns.Count == 0)
+            {
+                MessageBox.Show("Não há dados para exportar.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            using (var dlg = new SaveFileDialog())
+            {
+                dlg.Filter = "Excel (*.xlsx)|*.xlsx";
+                dlg.FileName = nomeSugerido;
+                dlg.DefaultExt = "xlsx";
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+
+                try
+                {
+                    Common.Exportacao.SalvarXlsx(grid, dlg.FileName);
+                    MessageBox.Show("Planilha exportada com sucesso!", "SOEN", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex);
+                    MessageBox.Show("Erro ao exportar Excel. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        public static void ExportarPdf(DataGridView grid, string titulo, string nomeSugerido)
+        {
+            if (grid.Columns.Count == 0)
+            {
+                MessageBox.Show("Não há dados para exportar.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            using (var dlg = new SaveFileDialog())
+            {
+                dlg.Filter = "PDF (*.pdf)|*.pdf";
+                dlg.FileName = nomeSugerido;
+                dlg.DefaultExt = "pdf";
+                if (dlg.ShowDialog() != DialogResult.OK) return;
+
+                try
+                {
+                    Common.Exportacao.SalvarPdfGrid(grid, titulo, dlg.FileName);
+                    MessageBox.Show("PDF gerado com sucesso!", "SOEN", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex);
+                    MessageBox.Show("Erro ao gerar o PDF. Veja o log para detalhes.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        public static void AdicionarBotoesExportar(Form form, Func<DataGridView> obterGrid,
+            string titulo, string baseArquivo, int x, int y)
+        {
+            var btnPdf = UIHelpers.CreateButton("PDF", new Point(x, y), new Size(66, 28));
+            btnPdf.Click += (s, e) => ExportarPdf(obterGrid(), titulo, baseArquivo + ".pdf");
+            var btnExcel = UIHelpers.CreateButton("Excel", new Point(x + 74, y), new Size(72, 28));
+            btnExcel.Click += (s, e) => ExportarExcel(obterGrid(), baseArquivo + ".xlsx");
+            form.Controls.Add(btnPdf);
+            form.Controls.Add(btnExcel);
+        }
+
         public static void Imprimir(DataGridView grid, string titulo)
         {
             if (grid.Columns.Count == 0)
@@ -385,6 +542,28 @@ namespace Soen___Torrezim
             if (s.Contains(";") || s.Contains("\"") || s.Contains("\n"))
                 return "\"" + s.Replace("\"", "\"\"") + "\"";
             return s;
+        }
+
+        /// <summary>Configura o documento para folha A4.</summary>
+        private static void ConfigurarA4(PrintDocument doc)
+        {
+            try
+            {
+                doc.DefaultPageSettings.PaperSize = new System.Drawing.Printing.PaperSize("A4", 827, 1169);
+            }
+            catch { }
+        }
+
+        /// <summary>Carrega a imagem da logo da empresa (ou null se não configurada).</summary>
+        private static Image CarregarLogo(Empresa emp)
+        {
+            try
+            {
+                if (emp != null && !string.IsNullOrWhiteSpace(emp.LogoPath) && System.IO.File.Exists(emp.LogoPath))
+                    return Image.FromFile(emp.LogoPath);
+            }
+            catch { }
+            return null;
         }
 
         /// <summary>Aplica a impressora padrão salva nas configurações ao documento.</summary>

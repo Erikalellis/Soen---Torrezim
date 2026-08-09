@@ -107,6 +107,24 @@ VALUES (
             return lista;
         }
 
+        /// <summary>Busca se já existe um cadastro com o mesmo CPF/CNPJ (exceto o informado).</summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
+            Justification = "O único valor dinâmico é o parâmetro @cpf (seguro). O SQL é texto estático.")]
+        public static bool ExisteCpfCnpj(string cpfCnpj, long excetoId)
+        {
+            if (string.IsNullOrWhiteSpace(cpfCnpj)) return false;
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT COUNT(*) FROM clientes WHERE cpf_cnpj = @cpf";
+                cmd.Parameters.AddWithValue("@cpf", cpfCnpj.Trim());
+                if (excetoId > 0) cmd.CommandText += " AND id <> @id";
+                if (excetoId > 0) cmd.Parameters.AddWithValue("@id", excetoId);
+                long n = (long)cmd.ExecuteScalar();
+                return n > 0;
+            }
+        }
+
         /// <summary>Busca um cliente pelo Id.</summary>
         public static Cliente BuscarPorId(long id)
         {

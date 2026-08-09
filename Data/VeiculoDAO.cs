@@ -17,14 +17,15 @@ namespace Soen___Torrezim.Data
                 {
                     cmd.CommandText = @"UPDATE veiculos SET
     cliente_id = @cliente, placa = @placa, marca = @marca, modelo = @modelo,
-    cor = @cor, observacoes = @obs, quilometragem = @km, proxima_revisao = @rev
+    cor = @cor, observacoes = @obs, quilometragem = @km, proxima_revisao = @rev,
+    garantia_fim = @gar, ipva_venc = @ipva, licenciamento_venc = @lic
 WHERE id = @id";
                     cmd.Parameters.AddWithValue("@id", v.Id);
                 }
                 else
                 {
-                    cmd.CommandText = @"INSERT INTO veiculos (cliente_id, placa, marca, modelo, cor, observacoes, quilometragem, proxima_revisao)
-VALUES (@cliente, @placa, @marca, @modelo, @cor, @obs, @km, @rev)";
+                    cmd.CommandText = @"INSERT INTO veiculos (cliente_id, placa, marca, modelo, cor, observacoes, quilometragem, proxima_revisao, garantia_fim, ipva_venc, licenciamento_venc)
+VALUES (@cliente, @placa, @marca, @modelo, @cor, @obs, @km, @rev, @gar, @ipva, @lic)";
                 }
 
                 cmd.Parameters.AddWithValue("@cliente", v.ClienteId);
@@ -35,6 +36,9 @@ VALUES (@cliente, @placa, @marca, @modelo, @cor, @obs, @km, @rev)";
                 cmd.Parameters.AddWithValue("@obs", Database.Nulo(v.Observacoes));
                 cmd.Parameters.AddWithValue("@km", v.Quilometragem);
                 cmd.Parameters.AddWithValue("@rev", Database.Nulo(v.ProximaRevisao));
+                cmd.Parameters.AddWithValue("@gar", Database.Nulo(v.GarantiaFim));
+                cmd.Parameters.AddWithValue("@ipva", Database.Nulo(v.IpvaVenc));
+                cmd.Parameters.AddWithValue("@lic", Database.Nulo(v.LicenciamentoVenc));
 
                 cmd.ExecuteNonQuery();
 
@@ -70,6 +74,28 @@ FROM veiculos v LEFT JOIN clientes c ON c.id = v.cliente_id WHERE 1=1";
                     {
                         lista.Add(LerLinha(leitor));
                     }
+                }
+            }
+            return lista;
+        }
+
+        /// <summary>Busca veículos por placa, marca, modelo ou nome do dono.</summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
+            Justification = "O único valor dinâmico é o parâmetro @f (seguro). O SQL é texto estático.")]
+        public static List<Veiculo> ListarPorBusca(string termo)
+        {
+            var lista = new List<Veiculo>();
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"SELECT v.*, c.nome_razao AS nome_cliente
+FROM veiculos v LEFT JOIN clientes c ON c.id = v.cliente_id
+WHERE v.placa LIKE @f OR v.marca LIKE @f OR v.modelo LIKE @f OR c.nome_razao LIKE @f
+ORDER BY v.placa";
+                cmd.Parameters.AddWithValue("@f", "%" + termo.Trim() + "%");
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    while (leitor.Read()) lista.Add(LerLinha(leitor));
                 }
             }
             return lista;
@@ -123,6 +149,9 @@ FROM veiculos v LEFT JOIN clientes c ON c.id = v.cliente_id WHERE 1=1";
             idx = r.GetOrdinal("quilometragem");
             if (!r.IsDBNull(idx)) v.Quilometragem = r.GetDouble(idx);
             v.ProximaRevisao = LerString(r, "proxima_revisao");
+            v.GarantiaFim = LerString(r, "garantia_fim");
+            v.IpvaVenc = LerString(r, "ipva_venc");
+            v.LicenciamentoVenc = LerString(r, "licenciamento_venc");
             return v;
         }
 

@@ -147,6 +147,31 @@ LEFT JOIN veiculos vh ON vh.id=v.veiculo_id WHERE 1=1";
             return lista;
         }
 
+        /// <summary>Busca vendas por termo (cliente, nº, placa do veículo ou observação).</summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
+            Justification = "O único valor dinâmico é o parâmetro @f (seguro). O SQL é texto estático.")]
+        public static List<Venda> ListarPesquisa(string termo)
+        {
+            var lista = new List<Venda>();
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"SELECT v.*, c.nome_razao AS nome_cliente,
+COALESCE(vh.placa, '') AS veiculo_desc
+FROM vendas v
+LEFT JOIN clientes c ON c.id=v.cliente_id
+LEFT JOIN veiculos vh ON vh.id=v.veiculo_id
+WHERE c.nome_razao LIKE @f OR vh.placa LIKE @f OR v.observacoes LIKE @f OR CAST(v.id AS TEXT) LIKE @f
+ORDER BY v.id DESC";
+                cmd.Parameters.AddWithValue("@f", "%" + termo.Trim() + "%");
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    while (leitor.Read()) lista.Add(LerLinha(leitor));
+                }
+            }
+            return lista;
+        }
+
         public static Venda BuscarPorId(long id)
         {
             using (var conn = Database.AbrirConexao())

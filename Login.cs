@@ -18,7 +18,6 @@ namespace Soen___Torrezim
         {
             InitializeComponent();
             Text = "Soen - Entrar";
-            ClientSize = new Size(340, 190);
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = SystemColors.GradientInactiveCaption;
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -29,22 +28,53 @@ namespace Soen___Torrezim
 
         private void CriarInterface()
         {
-            var l1 = new Label { Text = "Usuário:", AutoSize = true, Location = new Point(20, 22) };
-            txtUsuario = new TextBox { Location = new Point(90, 19), Size = new Size(200, 20) };
+            Empresa emp = EmpresaDAO.Obter();
+            string nomeEmpresa = string.IsNullOrWhiteSpace(emp.Nome) ? "Soen - Sistema de Ordem de Serviço" : emp.Nome;
 
-            var l2 = new Label { Text = "Senha:", AutoSize = true, Location = new Point(20, 52) };
-            txtSenha = new TextBox { Location = new Point(90, 49), Size = new Size(200, 20), PasswordChar = '*' };
+            // Marca: logo (se configurado) + nome da empresa
+            var logo = new PictureBox { Location = new Point(110, 18), Size = new Size(120, 70), SizeMode = PictureBoxSizeMode.Zoom };
+            bool temLogo = false;
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(emp.LogoPath) && System.IO.File.Exists(emp.LogoPath))
+                {
+                    logo.Image = Image.FromFile(emp.LogoPath);
+                    temLogo = true;
+                }
+            }
+            catch { }
 
-            btnEntrar = UIHelpers.CreateButton("Entrar", new Point(90, 90), new Size(90, 30));
+            var lblTitulo = new Label
+            {
+                Text = nomeEmpresa,
+                AutoSize = true,
+                Location = new Point(20, temLogo ? 96 : 40),
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+
+            int yBase = temLogo ? 130 : 74;
+
+            var l1 = new Label { Text = "Usuário:", AutoSize = true, Location = new Point(20, yBase + 22) };
+            txtUsuario = new TextBox { Location = new Point(90, yBase + 19), Size = new Size(200, 20) };
+
+            var l2 = new Label { Text = "Senha:", AutoSize = true, Location = new Point(20, yBase + 52) };
+            txtSenha = new TextBox { Location = new Point(90, yBase + 49), Size = new Size(200, 20), PasswordChar = '*' };
+
+            btnEntrar = UIHelpers.CreateButton("Entrar", new Point(90, yBase + 90), new Size(90, 30));
             btnEntrar.Click += (s, e) => Entrar();
             btnEntrar.DialogResult = DialogResult.None;
 
-            var btnCancelar = UIHelpers.CreateButton("Cancelar", new Point(200, 90), new Size(90, 30));
+            var btnCancelar = UIHelpers.CreateButton("Cancelar", new Point(200, yBase + 90), new Size(90, 30));
             btnCancelar.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
+
+            ClientSize = new Size(340, temLogo ? 260 : 190);
 
             AcceptButton = btnEntrar;
             txtSenha.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) Entrar(); };
 
+            Controls.Add(lblTitulo);
+            if (temLogo) Controls.Add(logo);
             Controls.AddRange(new Control[] { l1, txtUsuario, l2, txtSenha, btnEntrar, btnCancelar });
         }
 

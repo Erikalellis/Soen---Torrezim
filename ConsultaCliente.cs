@@ -10,7 +10,7 @@ namespace Soen___Torrezim
     /// Consulta e gestão de clientes: busca, lista, edita e exclui.
     /// Mostra um DataGridView com os cadastros e ações para cada registro.
     /// </summary>
-    public partial class ConsultaCliente : Form
+    public partial class ConsultaCliente : BaseForm
     {
         private DataGridView grid;
         private TextBox txtBusca;
@@ -19,6 +19,7 @@ namespace Soen___Torrezim
         private Button btnNovo;
         private Button btnEditar;
         private Button btnExcluir;
+        private Button btnHistorico;
         private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
@@ -47,6 +48,7 @@ namespace Soen___Torrezim
             btnNovo = CriarBotao("Novo Cliente", 12, 50, (s, e) => AbrirNovo());
             btnEditar = CriarBotao("Editar", 110, 50, (s, e) => AbrirEdicao());
             btnExcluir = CriarBotao("Excluir", 205, 50, (s, e) => Excluir());
+            btnHistorico = CriarBotao("Histórico", 310, 50, (s, e) => AbrirHistorico());
 
             // Grid
             grid = new DataGridView
@@ -87,6 +89,7 @@ namespace Soen___Torrezim
             Controls.Add(btnNovo);
             Controls.Add(btnEditar);
             Controls.Add(btnExcluir);
+            Controls.Add(btnHistorico);
             Controls.Add(grid);
             Controls.Add(statusBar);
         }
@@ -133,6 +136,18 @@ namespace Soen___Torrezim
             }
             new CadastroCliente(c).ShowDialog();
             CarregarClientes(txtBusca.Text.Trim());
+        }
+
+        private void AbrirHistorico()
+        {
+            var c = ClienteSelecionado();
+            if (c == null)
+            {
+                MessageBox.Show("Selecione um cliente na lista para ver o histórico.", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            new HistoricoCliente(c).ShowDialog();
         }
 
         private void Excluir()

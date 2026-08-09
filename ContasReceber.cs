@@ -9,7 +9,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Contas a Receber (módulo financeiro).</summary>
-    public partial class ContasReceber : Form
+    public partial class ContasReceber : BaseForm
     {
         private TextBox txtDescricao;
         private TextBox txtCliente;
@@ -19,7 +19,6 @@ namespace Soen___Torrezim
         private Button btnReceber;
         private Button btnExcluir;
         private DataGridView grid;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public ContasReceber()
@@ -58,7 +57,7 @@ namespace Soen___Torrezim
             grid = new DataGridView
             {
                 Location = new Point(12, 132),
-                Size = new Size(790, 330),
+                Size = new Size(790, 304),
                 ReadOnly = true,
                 MultiSelect = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
@@ -72,15 +71,14 @@ namespace Soen___Torrezim
             grid.Columns.Add("Cliente", "Cliente");
             grid.Columns.Add("Vencimento", "Vencimento");
             grid.Columns.Add("Valor", "Valor");
+            grid.Columns.Add("Pagamento", "Pagamento");
             grid.Columns.Add("Status", "Status");
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 478);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] { l1, txtDescricao, l2, txtCliente, l3, dtpVencimento, l4, txtValor,
-                btnAdicionar, btnReceber, btnExcluir, grid, statusBar });
+                btnAdicionar, btnReceber, btnExcluir, grid });
         }
 
         private void Carregar()
@@ -89,7 +87,8 @@ namespace Soen___Torrezim
             var cult = CultureInfo.GetCultureInfo("pt-BR");
             List<ContaFinanceira> lista = FinanceiroDAO.Listar("receber");
             foreach (var c in lista)
-                grid.Rows.Add(c.Id, c.Descricao, c.Fornecedor, c.Vencimento, c.Valor.ToString("N2", cult), c.Status);
+                grid.Rows.Add(c.Id, c.Descricao, c.Fornecedor, c.Vencimento, c.Valor.ToString("N2", cult),
+                    c.Status == "pago" ? c.DataPagamento : "", c.Status);
             lblStatus.Text = lista.Count + " conta(s) a receber - Em aberto: R$ " +
                 FinanceiroDAO.TotalAberto("receber").ToString("N2", cult);
         }
@@ -120,7 +119,14 @@ namespace Soen___Torrezim
             List<ContaFinanceira> lista = FinanceiroDAO.Listar("receber");
             foreach (var c in lista)
             {
-                if (c.Id == id.Value) { c.Status = status; FinanceiroDAO.Salvar(c); break; }
+                if (c.Id == id.Value)
+                {
+                    c.Status = status;
+                    if (status == "pago" && string.IsNullOrWhiteSpace(c.DataPagamento))
+                        c.DataPagamento = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+                    FinanceiroDAO.Salvar(c);
+                    break;
+                }
             }
             Carregar();
         }

@@ -12,7 +12,7 @@ namespace Soen___Torrezim
     /// Inventário de peças e materiais: cadastro de produtos, ajuste de estoque
     /// e listagem com quantidade disponível.
     /// </summary>
-    public partial class InventarioPM : Form
+    public partial class InventarioPM : BaseForm
     {
         private TextBox txtBusca;
         private Button btnBuscar;
@@ -27,7 +27,6 @@ namespace Soen___Torrezim
         private Button btnSalvar;
         private Button btnNovo;
         private Button btnExcluir;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         private long? _produtoEdicao;
@@ -102,14 +101,12 @@ namespace Soen___Torrezim
             grid.Columns["Nome"].FillWeight = 3.5f;
             grid.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) CarregarParaEdicao(); };
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 538);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] { txtBusca, btnBuscar, btnTodos, l1, txtCodigo, l2, txtNome,
                 l3, txtCategoria, l4, txtUnidade, l5, txtCusto, l6, txtPreco,
-                btnSalvar, btnNovo, btnExcluir, grid, statusBar });
+                btnSalvar, btnNovo, btnExcluir, grid });
         }
 
         private Button Botao(string texto, int x, int y, EventHandler clique = null)

@@ -9,7 +9,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Cadastro do catálogo de Serviços (nome, descrição e preço).</summary>
-    public partial class CadastroServico : Form
+    public partial class CadastroServico : BaseForm
     {
         private TextBox txtNome;
         private TextBox txtDescricao;

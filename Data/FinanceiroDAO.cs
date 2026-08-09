@@ -15,13 +15,13 @@ namespace Soen___Torrezim.Data
                 if (c.Id > 0)
                 {
                     cmd.CommandText = @"UPDATE financeiro SET tipo=@tipo, descricao=@desc, fornecedor=@forn,
-vencimento=@venc, valor=@valor, status=@status WHERE id=@id";
+vencimento=@venc, valor=@valor, status=@status, data_pagamento=@data_pag WHERE id=@id";
                     cmd.Parameters.AddWithValue("@id", c.Id);
                 }
                 else
                 {
-                    cmd.CommandText = @"INSERT INTO financeiro (tipo, descricao, fornecedor, vencimento, valor, status)
-VALUES (@tipo, @desc, @forn, @venc, @valor, @status)";
+                    cmd.CommandText = @"INSERT INTO financeiro (tipo, descricao, fornecedor, vencimento, valor, status, data_pagamento)
+VALUES (@tipo, @desc, @forn, @venc, @valor, @status, @data_pag)";
                 }
                 cmd.Parameters.AddWithValue("@tipo", c.Tipo ?? "pagar");
                 cmd.Parameters.AddWithValue("@desc", Database.Nulo(c.Descricao));
@@ -29,6 +29,7 @@ VALUES (@tipo, @desc, @forn, @venc, @valor, @status)";
                 cmd.Parameters.AddWithValue("@venc", Database.Nulo(c.Vencimento));
                 cmd.Parameters.AddWithValue("@valor", c.Valor);
                 cmd.Parameters.AddWithValue("@status", Database.Nulo(c.Status ?? "em_aberto"));
+                cmd.Parameters.AddWithValue("@data_pag", Database.Nulo(c.DataPagamento));
                 cmd.ExecuteNonQuery();
                 if (c.Id <= 0) c.Id = (long)conn.LastInsertRowId;
                 return c.Id;
@@ -58,6 +59,7 @@ VALUES (@tipo, @desc, @forn, @venc, @valor, @status)";
                             Vencimento = LerStr(leitor, "vencimento"),
                             Valor      = leitor.GetDouble(leitor.GetOrdinal("valor")),
                             Status     = LerStr(leitor, "status"),
+                            DataPagamento = LerStr(leitor, "data_pagamento"),
                             CriadoEm   = LerStr(leitor, "criado_em")
                         });
                     }

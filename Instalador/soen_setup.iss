@@ -45,7 +45,7 @@ Name: "{autodesktop}\SOEN"; Filename: "{app}\Soen - Torrezim.exe"; Tasks: deskto
 
 [Run]
 Filename: "{app}\Soen - Torrezim.exe"; Description: "Executar o SOEN agora"; Flags: nowait postinstall skipifsilent
-Filename: "https://deepdarkness.com.br/"; Description: "Abrir o site Deep Darkness"; Flags: nowait postinstall skipifsilent unchecked
+Filename: "https://deepdarkness.com.br/"; Description: "Abrir o site Deep Darkness"; Flags: shellexec nowait postinstall skipifsilent unchecked
 
 [Code]
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);

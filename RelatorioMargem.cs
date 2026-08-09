@@ -12,7 +12,7 @@ namespace Soen___Torrezim
     /// Análise de margem: compara custo x preço de venda dos serviços do
     /// catálogo e das peças/produtos do estoque.
     /// </summary>
-    public partial class RelatorioMargem : Form
+    public partial class RelatorioMargem : BaseForm
     {
         private ComboBox cmbFiltro;
         private DataGridView grid;
@@ -48,6 +48,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(grid, "margem_servicos.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(506, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(grid, "Soen - Margem por Serviço/Peça");
+            RelatorioHelper.AdicionarBotoesExportar(this, () => grid, "Soen - Margem por Serviço/Peça", "margem_servicos", 614, 12);
             lblTotal = new Label { Text = "", AutoSize = true, Location = new Point(12, 50), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
 
             grid = new DataGridView

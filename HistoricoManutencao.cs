@@ -11,13 +11,12 @@ namespace Soen___Torrezim
     /// <summary>
     /// Histórico de manutenções de todos os veículos (visão geral, somente leitura).
     /// </summary>
-    public partial class HistoricoManutencao : Form
+    public partial class HistoricoManutencao : BaseForm
     {
         private TextBox txtBusca;
         private Button btnBuscar;
         private Button btnTodos;
         private DataGridView grid;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public HistoricoManutencao()
@@ -67,12 +66,10 @@ namespace Soen___Torrezim
             grid.Columns["Descricao"].FillWeight = 3f;
             grid.Columns["Valor"].FillWeight = 1.2f;
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 448);
+            // usa StatusStrip padrão da BaseForm
+lblStatus = BaseStatusLabel;
 
-            Controls.AddRange(new Control[] { txtBusca, btnBuscar, btnTodos, grid, statusBar });
+            Controls.AddRange(new Control[] { txtBusca, btnBuscar, btnTodos, grid });
         }
 
         private Button CriarBotao(string texto, int x, int y, EventHandler clique)

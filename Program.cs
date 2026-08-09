@@ -20,6 +20,7 @@ namespace Soen___Torrezim
             {
                 if (login.ShowDialog() != DialogResult.OK)
                     return; // usuário cancelou ou não autenticou
+                Sessao.UsuarioAtual = login.UsuarioLogado;
             }
 
             Application.Run(new FrmPrincipal());

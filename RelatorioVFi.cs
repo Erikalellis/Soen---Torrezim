@@ -9,7 +9,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Relatório de Vendas e Financeiro (vendas, caixa e contas).</summary>
-    public partial class RelatorioVFi : Form
+    public partial class RelatorioVFi : BaseForm
     {
         private TabControl tabs;
         private DataGridView gridVendas;
@@ -39,6 +39,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(GridAtivo(), "vendas_financeiro.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(268, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(GridAtivo(), "Soen - Vendas e Financeiro");
+            RelatorioHelper.AdicionarBotoesExportar(this, GridAtivo, "Soen - Vendas e Financeiro", "vendas_financeiro", 376, 12);
             lblTotais = new Label { Text = "", AutoSize = true, Location = new Point(12, 48), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
 
             tabs = new TabControl { Location = new Point(12, 74), Size = new Size(810, 380) };

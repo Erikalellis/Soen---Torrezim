@@ -12,7 +12,7 @@ namespace Soen___Torrezim
     /// Controle de Caixa: mostra todos os lançamentos (entradas e saídas),
     /// o saldo atual e permite lançar entradas/saídas manuais.
     /// </summary>
-    public partial class ControleCaixa : Form
+    public partial class ControleCaixa : BaseForm
     {
         private DataGridView grid;
         private ComboBox cmbTipo;
@@ -21,8 +21,9 @@ namespace Soen___Torrezim
         private Button btnLancar;
         private Button btnExcluir;
         private Button btnRecibo;
+        private Button btnFechamento;
+        private Button btnReabrir;
         private Label lblSaldo;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public ControleCaixa()
@@ -78,6 +79,12 @@ namespace Soen___Torrezim
             btnRecibo = UIHelpers.CreateButton("Recibo do Lançamento", new Point(468, 400), new Size(136, 26));
             btnRecibo.Click += (s, e) => ImprimirReciboCaixa();
 
+            btnReabrir = UIHelpers.CreateButton("Reabrir Dia", new Point(180, 400), new Size(136, 26));
+            btnReabrir.Click += (s, e) => ReabrirDia();
+
+            btnFechamento = UIHelpers.CreateButton("Fechamento do Dia", new Point(324, 400), new Size(136, 26));
+            btnFechamento.Click += (s, e) => ImprimirFechamentoDia();
+
             lblSaldo = new Label
             {
                 AutoSize = true,
@@ -85,12 +92,10 @@ namespace Soen___Torrezim
                 Font = new Font("Microsoft Sans Serif", 11F, FontStyle.Bold)
             };
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 438);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
-            Controls.AddRange(new Control[] { lblTipo, cmbTipo, lblDesc, txtDescricao, lblValor, txtValor, btnLancar, grid, btnExcluir, btnRecibo, lblSaldo, statusBar });
+            Controls.AddRange(new Control[] { lblTipo, cmbTipo, lblDesc, txtDescricao, lblValor, txtValor, btnLancar, grid, btnExcluir, btnRecibo, btnReabrir, btnFechamento, lblSaldo });
         }
 
         private void CarregarLancamentos()
@@ -112,8 +117,23 @@ namespace Soen___Torrezim
             lblStatus.Text = lista.Count + " lançamento(s) • Entradas R$ " + entradas.ToString("N2", cult) + " • Saídas R$ " + saidas.ToString("N2", cult);
         }
 
+        /// <summary>Chave "caixa_fechado" na tabela config guarda o último dia fechado (yyyy-MM-dd).</summary>
+        private static string DiaFechado
+        {
+            get { return ConfigDAO.Obter("caixa_fechado", ""); }
+            set { ConfigDAO.Salvar("caixa_fechado", value); }
+        }
+
         private void Lancar()
         {
+            string hoje = DateTime.Now.ToString("yyyy-MM-dd");
+            if (DiaFechado == hoje)
+            {
+                MessageBox.Show("O caixa de hoje já foi fechado. Para lançar neste dia, use \"Reabrir Dia\".",
+                    "Dia fechado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(txtDescricao.Text))
             {
                 MessageBox.Show("Informe a descrição do lançamento.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -168,6 +188,44 @@ namespace Soen___Torrezim
                 if (x.Id == id) { l = x; break; }
             if (l == null) return;
             RelatorioHelper.VisualizarReciboCaixa(l);
+        }
+
+        private void ImprimirFechamentoDia()
+        {
+            var hoje = DateTime.Now;
+            string dia = hoje.ToString("yyyy-MM-dd");
+
+            if (DiaFechado == dia)
+            {
+                MessageBox.Show("Este dia já foi fechado. O resumo é exibido apenas para consulta.",
+                    "Dia já fechado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (MessageBox.Show("Fechar o caixa de hoje (" + hoje.ToShortDateString() +
+                ")? Após fechar, novos lançamentos deste dia serão bloqueados.",
+                "Fechar o dia", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                DiaFechado = dia;
+                CarregarLancamentos();
+                MessageBox.Show("Dia fechado com sucesso.", "Fechamento do caixa",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            var movs = CaixaDAO.ListarPorDia(dia);
+            RelatorioHelper.VisualizarResumoCaixa(hoje, movs);
+        }
+
+        private void ReabrirDia()
+        {
+            string dia = DateTime.Now.ToString("yyyy-MM-dd");
+            if (DiaFechado == dia &&
+                MessageBox.Show("Reabrir o caixa de hoje para novos lançamentos?",
+                    "Reabrir dia", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                DiaFechado = "";
+                CarregarLancamentos();
+                MessageBox.Show("Dia reaberto.", "Controle de Caixa",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
     }
 }

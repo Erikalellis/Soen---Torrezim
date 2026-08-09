@@ -9,7 +9,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Relatório de Fornecedores e Credores (fornecedores + contas a pagar).</summary>
-    public partial class RelatorioFC : Form
+    public partial class RelatorioFC : BaseForm
     {
         private TabControl tabs;
         private DataGridView gridFornecedores;
@@ -37,6 +37,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(GridAtivo(), "fornecedores_credores.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(268, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(GridAtivo(), "Soen - Fornecedores e Credores");
+            RelatorioHelper.AdicionarBotoesExportar(this, GridAtivo, "Soen - Fornecedores e Credores", "fornecedores_credores", 376, 12);
 
             tabs = new TabControl { Location = new Point(12, 50), Size = new Size(790, 380) };
 

@@ -8,12 +8,11 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Notificações de Agendamentos: lista agendamentos de hoje e futuros (não concluídos/cancelados).</summary>
-    public partial class NotificaoAgen : Form
+    public partial class NotificaoAgen : BaseForm
     {
         private ComboBox cmbPeriodo;
         private Button btnAtualizar;
         private DataGridView grid;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public NotificaoAgen()
@@ -61,12 +60,10 @@ namespace Soen___Torrezim
             grid.Columns["Cliente"].FillWeight = 2f;
             grid.Columns["Servico"].FillWeight = 2f;
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 478);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
-            Controls.AddRange(new Control[] { l1, cmbPeriodo, btnAtualizar, grid, statusBar });
+            Controls.AddRange(new Control[] { l1, cmbPeriodo, btnAtualizar, grid });
         }
 
         private void Carregar()

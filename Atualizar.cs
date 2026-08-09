@@ -5,7 +5,7 @@ using System.Windows.Forms;
 namespace Soen___Torrezim
 {
     /// <summary>Verificação de Atualizações (informativo).</summary>
-    public partial class Atualizar : Form
+    public partial class Atualizar : BaseForm
     {
         public Atualizar()
         {
@@ -24,7 +24,7 @@ namespace Soen___Torrezim
             };
             var l2 = new Label
             {
-                Text = "Versão atual: 1.0.0" + Environment.NewLine +
+                Text = "Versão atual: " + Application.ProductVersion + Environment.NewLine +
                        "Seu sistema está atualizado." + Environment.NewLine +
                        "Novidades e correções serão distribuídas por atualizações futuras.",
                 Location = new Point(12, 60),

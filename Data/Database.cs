@@ -54,7 +54,11 @@ namespace Soen___Torrezim.Data
             AdicionarColunaSeFaltar(conn, "orcamentos", "concluido_em", "TEXT");
             AdicionarColunaSeFaltar(conn, "veiculos", "quilometragem", "REAL DEFAULT 0");
             AdicionarColunaSeFaltar(conn, "veiculos", "proxima_revisao", "TEXT");
+            AdicionarColunaSeFaltar(conn, "veiculos", "garantia_fim", "TEXT");
+            AdicionarColunaSeFaltar(conn, "veiculos", "ipva_venc", "TEXT");
+            AdicionarColunaSeFaltar(conn, "veiculos", "licenciamento_venc", "TEXT");
             AdicionarColunaSeFaltar(conn, "orcamento_itens", "produto_id", "INTEGER");
+            AdicionarColunaSeFaltar(conn, "financeiro", "data_pagamento", "TEXT");
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
@@ -241,6 +245,7 @@ CREATE TABLE IF NOT EXISTS financeiro (
     vencimento   TEXT,
     valor        REAL DEFAULT 0,
     status       TEXT DEFAULT 'em_aberto', -- em_aberto | pago | cancelado
+    data_pagamento TEXT,                   -- quando foi pago/recebido
     criado_em    TEXT DEFAULT (datetime('now','localtime'))
 );
 

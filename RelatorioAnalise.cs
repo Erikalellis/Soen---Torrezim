@@ -9,7 +9,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Relatório de Análise Gerencial: indicadores globais do negócio.</summary>
-    public partial class RelatorioAnalise : Form
+    public partial class RelatorioAnalise : BaseForm
     {
         private DataGridView grid;
         private Button btnGerar;
@@ -35,6 +35,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(grid, "analise_gerencial.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(258, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(grid, "Soen - Análise Gerencial");
+            RelatorioHelper.AdicionarBotoesExportar(this, () => grid, "Soen - Análise Gerencial", "analise_gerencial", 366, 12);
 
             grid = new DataGridView
             {

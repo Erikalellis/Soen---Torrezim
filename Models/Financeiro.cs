@@ -13,6 +13,7 @@ namespace Soen___Torrezim.Models
         public string Vencimento { get; set; }
         public double Valor { get; set; }
         public string Status { get; set; }
+        public string DataPagamento { get; set; }
         public string CriadoEm { get; set; }
     }
 }

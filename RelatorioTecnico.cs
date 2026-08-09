@@ -12,7 +12,7 @@ namespace Soen___Torrezim
     /// Relatório de comissões por Técnico, a partir das OS/Orçamentos que
     /// possuem técnico responsável e comissão calculada.
     /// </summary>
-    public partial class RelatorioTecnico : Form
+    public partial class RelatorioTecnico : BaseForm
     {
         private ComboBox cmbTecnico;
         private DataGridView grid;
@@ -45,6 +45,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(grid, "comissoes_tecnicos.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(586, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(grid, "Soen - Comissões por Técnico");
+            RelatorioHelper.AdicionarBotoesExportar(this, () => grid, "Soen - Comissões por Técnico", "comissoes_tecnicos", 694, 12);
             lblTotal = new Label { Text = "", AutoSize = true, Location = new Point(12, 50), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
 
             grid = new DataGridView

@@ -50,6 +50,33 @@ VALUES (@data, @tipo, @descricao, @valor)";
             return lista;
         }
 
+        /// <summary>Lista os lançamentos de um dia específico (formato aaaa-mm-dd).</summary>
+        public static List<LancamentoCaixa> ListarPorDia(string dia)
+        {
+            var lista = new List<LancamentoCaixa>();
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT * FROM caixa WHERE substr(data,1,10) = @dia ORDER BY id";
+                cmd.Parameters.AddWithValue("@dia", dia);
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    while (leitor.Read())
+                    {
+                        lista.Add(new LancamentoCaixa
+                        {
+                            Id        = leitor.GetInt64(leitor.GetOrdinal("id")),
+                            Data      = LerStr(leitor, "data"),
+                            Tipo      = LerStr(leitor, "tipo"),
+                            Descricao = LerStr(leitor, "descricao"),
+                            Valor     = leitor.GetDouble(leitor.GetOrdinal("valor"))
+                        });
+                    }
+                }
+            }
+            return lista;
+        }
+
         /// <summary>Soma total de entradas menos saídas.</summary>
         public static double Saldo()
         {

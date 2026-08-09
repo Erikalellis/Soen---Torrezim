@@ -21,6 +21,8 @@ namespace Soen___Torrezim
         private Label lblReceber;
         private Label lblRevisoes;
         private Label lblEstoqueBaixo;
+        private Label lblFaturamentoMes;
+        private Label lblComissoes;
         private DataGridView gridPend;
         private Button btnAtualizar;
 
@@ -49,22 +51,24 @@ namespace Soen___Torrezim
             };
 
             int w = 200, h = 70;
-            Point[] pos = { new Point(12, 96), new Point(230, 96), new Point(448, 96),
-                            new Point(12, 182), new Point(230, 182), new Point(448, 182) };
+            Point[] pos = { new Point(12, 96), new Point(230, 96), new Point(448, 96), new Point(660, 96),
+                            new Point(12, 182), new Point(230, 182), new Point(448, 182), new Point(660, 182) };
 
-            lblOsAbertas    = CriarCard(pos[0], w, h);
-            lblVendasHoje   = CriarCard(pos[1], w, h);
-            lblSaldoCaixa   = CriarCard(pos[2], w, h);
-            lblReceber      = CriarCard(pos[3], w, h);
-            lblRevisoes     = CriarCard(pos[4], w, h);
-            lblEstoqueBaixo = CriarCard(pos[5], w, h);
+            lblOsAbertas       = CriarCard(pos[0], w, h);
+            lblVendasHoje      = CriarCard(pos[1], w, h);
+            lblSaldoCaixa      = CriarCard(pos[2], w, h);
+            lblReceber         = CriarCard(pos[3], w, h);
+            lblFaturamentoMes  = CriarCard(pos[4], w, h);
+            lblComissoes       = CriarCard(pos[5], w, h);
+            lblRevisoes        = CriarCard(pos[6], w, h);
+            lblEstoqueBaixo    = CriarCard(pos[7], w, h);
 
             var lblPend = new Label { Text = "Pendências críticas:", AutoSize = true, Location = new Point(12, 282), Font = new Font("Segoe UI", 10, FontStyle.Bold) };
 
             gridPend = new DataGridView
             {
                 Location = new Point(12, 308),
-                Size = new Size(830, 220),
+                Size = new Size(860, 220),
                 ReadOnly = true,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 AllowUserToAddRows = false,
@@ -78,7 +82,8 @@ namespace Soen___Torrezim
             gridPend.Columns["Detalhe"].FillWeight = 3f;
 
             Controls.AddRange(new Control[] { btnAtualizar, titulo,
-                lblOsAbertas, lblVendasHoje, lblSaldoCaixa, lblReceber, lblRevisoes, lblEstoqueBaixo,
+                lblOsAbertas, lblVendasHoje, lblSaldoCaixa, lblReceber,
+                lblFaturamentoMes, lblComissoes, lblRevisoes, lblEstoqueBaixo,
                 lblPend, gridPend });
         }
 
@@ -124,7 +129,7 @@ namespace Soen___Torrezim
             foreach (var c in caixa) saldo += (c.Tipo == "saida" ? -c.Valor : c.Valor);
             lblSaldoCaixa.Text = "Caixa atual\nR$ " + saldo.ToString("N2", cult);
 
-            // A receber (em aberto, vence em até 7 dias)
+            // Contas a receber em aberto
             double aReceber = 0; int qtReceber = 0;
             foreach (var c in contas)
             {
@@ -132,6 +137,18 @@ namespace Soen___Torrezim
                 aReceber += c.Valor; qtReceber++;
             }
             lblReceber.Text = "Contas a receber (aberto)\n" + qtReceber + " — R$ " + aReceber.ToString("N2", cult);
+
+            // Faturamento do mês (todas as vendas do mês atual, incluindo OS convertidas)
+            string mesAtual = DateTime.Now.ToString("yyyy-MM");
+            double faturamentoMes = 0;
+            foreach (var v in vendas) if ((v.Data ?? "").StartsWith(mesAtual)) faturamentoMes += v.ValorTotal;
+            lblFaturamentoMes.Text = "Faturamento do mês\nR$ " + faturamentoMes.ToString("N2", cult);
+
+            // Comissões a pagar (saldo gerado − pago pelos técnicos)
+            double comissoesPagar = 0;
+            foreach (var resumo in TecnicoDAO.ListarResumoComissoes())
+                if (resumo.Saldo > 0) comissoesPagar += resumo.Saldo;
+            lblComissoes.Text = "Comissões a pagar\nR$ " + comissoesPagar.ToString("N2", cult);
 
             // Revisões
             int revisoes = 0;
@@ -141,7 +158,7 @@ namespace Soen___Torrezim
                 if (!string.IsNullOrWhiteSpace(v.ProximaRevisao) && DateTime.TryParse(v.ProximaRevisao, out d) && d.Date < DateTime.Today.AddDays(16))
                     revisoes++;
             }
-            lblRevisoes.Text = "Revisões vencidas/próximas\n" + revisoes + " veículo(s)";
+            lblRevisoes.Text = "Revisões/garantia/IPVA a vencer\n" + revisoes + " veículo(s)";
 
             // Estoque baixo
             int baixo = 0;
@@ -168,20 +185,47 @@ namespace Soen___Torrezim
                     gridPend.Rows.Add("Revisão vencida", v.Placa + " — vencida em " + d.ToString("dd/MM/yyyy"));
             }
 
-            // Contas a receber/pagar vencidas em aberto
+            // Alertas de vencimento (garantia / IPVA / licenciamento) — vencidos ou a vencer em 30 dias
+            foreach (var v in veiculos)
+            {
+                AlertarVencimento(v, v.GarantiaFim, "Garantia", "garantia termina");
+                AlertarVencimento(v, v.IpvaVenc, "IPVA", "IPVA vence");
+                AlertarVencimento(v, v.LicenciamentoVenc, "Licenciamento", "licenciamento vence");
+            }
+
+            // Contas a pagar/receber em aberto — vencidas ou a vencer em 15 dias
             foreach (var c in contas)
             {
                 if (c.Status == "pago" || c.Status == "cancelado") continue;
                 DateTime d;
-                if (DateTime.TryParse(c.Vencimento, out d) && d.Date < DateTime.Today)
-                    gridPend.Rows.Add("Conta " + (c.Tipo == "pagar" ? "a pagar" : "a receber") + " vencida",
+                if (!DateTime.TryParse(c.Vencimento, out d)) continue;
+                string rotulo = c.Tipo == "pagar" ? "Conta a pagar" : "Conta a receber";
+                if (d.Date < DateTime.Today)
+                    gridPend.Rows.Add(rotulo + " vencida",
                         c.Descricao + " — venceu em " + d.ToString("dd/MM/yyyy"));
+                else if (d.Date <= DateTime.Today.AddDays(15))
+                {
+                    int dt = (d.Date - DateTime.Today.Date).Days;
+                    gridPend.Rows.Add(rotulo + " vence em " + dt + " dia" + (dt == 1 ? "" : "s"),
+                        c.Descricao + " — " + d.ToString("dd/MM/yyyy") +
+                        " (R$ " + c.Valor.ToString("N2", CultureInfo.GetCultureInfo("pt-BR")) + ")");
+                }
             }
 
             // Estoque baixo
             foreach (var p in produtos)
                 if (p.QtdAtual <= 5)
                     gridPend.Rows.Add("Estoque baixo", p.Nome + " — qtd: " + p.QtdAtual.ToString("0.##") + " " + p.Unidade);
+        }
+
+        private void AlertarVencimento(Veiculo v, string dataStr, string rotulo, string verbo)
+        {
+            if (string.IsNullOrWhiteSpace(dataStr)) return;
+            DateTime d;
+            if (!DateTime.TryParse(dataStr, out d)) return;
+            if (d.Date < DateTime.Today.AddDays(30))
+                gridPend.Rows.Add(rotulo + (d.Date < DateTime.Today ? " vencido" : " a vencer"),
+                    v.Placa + " — " + verbo + " em " + d.ToString("dd/MM/yyyy"));
         }
     }
 }

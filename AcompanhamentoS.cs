@@ -8,14 +8,13 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Acompanhamento de Serviços: acompanha o andamento dos agendamentos.</summary>
-    public partial class AcompanhamentoS : Form
+    public partial class AcompanhamentoS : BaseForm
     {
         private ComboBox cmbFiltro;
         private Button btnAvancar;
         private Button btnRecuar;
         private Button btnAtualizar;
         private DataGridView grid;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public AcompanhamentoS()
@@ -69,12 +68,10 @@ namespace Soen___Torrezim
             grid.Columns["Cliente"].FillWeight = 2f;
             grid.Columns["Servico"].FillWeight = 2f;
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel(" ");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 478);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
-            Controls.AddRange(new Control[] { l1, cmbFiltro, btnAvancar, btnRecuar, btnAtualizar, grid, statusBar });
+            Controls.AddRange(new Control[] { l1, cmbFiltro, btnAvancar, btnRecuar, btnAtualizar, grid });
         }
 
         private void Carregar()

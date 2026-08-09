@@ -10,7 +10,7 @@ namespace Soen___Torrezim
     /// Relatório do tempo médio de atendimento por técnico, calculado entre a
     /// criação e a conversão das OS (Notas de Serviço) já finalizadas.
     /// </summary>
-    public partial class RelatorioTempoTecnico : Form
+    public partial class RelatorioTempoTecnico : BaseForm
     {
         private DataGridView grid;
         private Label lblTotal;
@@ -21,7 +21,7 @@ namespace Soen___Torrezim
         {
             InitializeComponent();
             Text = "Soen - Tempo Médio de Atendimento por Técnico";
-            ClientSize = new Size(720, 400);
+            ClientSize = new Size(840, 400);
             StartPosition = FormStartPosition.CenterParent;
             BackColor = SystemColors.GradientInactiveCaption;
             CriarInterface();
@@ -35,6 +35,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(grid, "tempo_atendimento_tecnicos.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(518, 10), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(grid, "Soen - Tempo Médio de Atendimento por Técnico");
+            RelatorioHelper.AdicionarBotoesExportar(this, () => grid, "Soen - Tempo Médio de Atendimento por Técnico", "tempo_atendimento_tecnicos", 626, 10);
 
             grid = new DataGridView
             {

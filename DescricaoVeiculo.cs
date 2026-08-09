@@ -13,7 +13,7 @@ namespace Soen___Torrezim
     /// dados completos (placa, marca, modelo, cor, observações, KM, próxima
     /// revisão e dono), com alerta de revisão vencida/próxima.
     /// </summary>
-    public partial class DescricaoVeiculo : Form
+    public partial class DescricaoVeiculo : BaseForm
     {
         private ComboBox cmbVeiculo;
         private TextBox txtPlaca;
@@ -24,7 +24,6 @@ namespace Soen___Torrezim
         private TextBox txtCliente;
         private TextBox txtKm;
         private TextBox txtRevisao;
-        private StatusStrip statusBar;
         private ToolStripStatusLabel lblStatus;
 
         public DescricaoVeiculo()
@@ -77,15 +76,13 @@ namespace Soen___Torrezim
             var lblRev = new Label { Text = "Próxima revisão:", AutoSize = true, Location = new Point(20, 312) };
             txtRevisao = new TextBox { Location = new Point(140, 308), Size = new Size(150, 20), ReadOnly = true, BackColor = Color.White };
 
-            statusBar = new StatusStrip();
-            lblStatus = new ToolStripStatusLabel("Selecione um veículo acima.");
-            statusBar.Items.Add(lblStatus);
-            statusBar.Location = new Point(0, 478);
+            // usa StatusStrip padrão da BaseForm
+            lblStatus = BaseStatusLabel;
 
             Controls.AddRange(new Control[] {
                 lblSel, cmbVeiculo, lblCliente, txtCliente, lblPlaca, txtPlaca,
                 lblMarca, txtMarca, lblModelo, txtModelo, lblCor, txtCor,
-                lblObs, txtObservacoes, lblKm, txtKm, lblRev, txtRevisao, statusBar
+                lblObs, txtObservacoes, lblKm, txtKm, lblRev, txtRevisao
             });
         }
 

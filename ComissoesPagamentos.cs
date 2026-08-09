@@ -12,7 +12,7 @@ namespace Soen___Torrezim
     /// saldo (comissões geradas pelas OS convertidas menos os valores pagos) e o
     /// histórico de pagamentos do técnico selecionado.
     /// </summary>
-    public partial class ComissoesPagamentos : Form
+    public partial class ComissoesPagamentos : BaseForm
     {
         private DataGridView gridResumo;
         private DataGridView gridHistorico;

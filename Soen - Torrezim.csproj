@@ -61,6 +61,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>1562687-code-computer-creative-html-process-technology-web-development_107058.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Soen___Torrezim.Program</StartupObject>
@@ -93,6 +94,8 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\BaseForm.cs">
@@ -101,6 +104,9 @@
     <Compile Include="Common\ComboItems.cs" />
     <Compile Include="Common\Logger.cs" />
     <Compile Include="Common\UIHelpers.cs" />
+    <Compile Include="Common\Exportacao.cs" />
+    <Compile Include="Common\Janelas.cs" />
+    <Compile Include="Common\Sessao.cs" />
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\ConfigDAO.cs" />
     <Compile Include="Data\ImpressoraConfig.cs" />
@@ -202,6 +208,8 @@
     <Compile Include="SobreInfo.Designer.cs">
       <DependentUpon>SobreInfo.cs</DependentUpon>
     </Compile>
+    <Compile Include="HistoricoCliente.cs" />
+    <Compile Include="PesquisaGlobal.cs" />
     <Compile Include="Login.cs">
       <SubType>Form</SubType>
     </Compile>

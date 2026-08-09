@@ -8,7 +8,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Cadastro de Fornecedores (usa a tabela clientes com tipo = 'fornecedor').</summary>
-    public partial class CadastroFornecedor : Form
+    public partial class CadastroFornecedor : BaseForm
     {
         private TextBox txtNome;
         private TextBox txtCpfCnpj;

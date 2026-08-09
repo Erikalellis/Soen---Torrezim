@@ -234,6 +234,88 @@ ORDER BY o.id DESC";
             return lista;
         }
 
+        /// <summary>Busca orçamentos/OS por termo (número, cliente, serviço ou placa).</summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
+            Justification = "O único valor dinâmico é o parâmetro @f (seguro). O SQL é texto estático.")]
+        public static List<Orcamento> ListarOrcamentosPesquisa(string termo)
+        {
+            var lista = new List<Orcamento>();
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"SELECT o.*, c.nome_razao AS nome_cliente, v.placa AS veiculo_placa, t.nome AS nome_tecnico
+FROM orcamentos o
+LEFT JOIN clientes c ON c.id=o.cliente_id
+LEFT JOIN veiculos v ON v.id=o.veiculo_id
+LEFT JOIN tecnicos t ON t.id=o.tecnico_id
+WHERE o.numero LIKE @f OR o.servico LIKE @f OR c.nome_razao LIKE @f OR v.placa LIKE @f OR CAST(o.id AS TEXT) LIKE @f
+ORDER BY o.id DESC";
+                cmd.Parameters.AddWithValue("@f", "%" + termo.Trim() + "%");
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    while (leitor.Read())
+                    {
+                        lista.Add(new Orcamento
+                        {
+                            Id = leitor.GetInt64(leitor.GetOrdinal("id")),
+                            Data = LerStr(leitor, "data"),
+                            ClienteId = LerLongNullable(leitor, "cliente_id"),
+                            VeiculoId = LerLongNullable(leitor, "veiculo_id"),
+                            Servico = LerStr(leitor, "servico"),
+                            Valor = leitor.GetDouble(leitor.GetOrdinal("valor")),
+                            Status = LerStr(leitor, "status"),
+                            Tipo = LerStr(leitor, "tipo"),
+                            Numero = LerStr(leitor, "numero"),
+                            NomeCliente = LerStr(leitor, "nome_cliente"),
+                            VeiculoPlaca = LerStr(leitor, "veiculo_placa"),
+                            NomeTecnico = LerStr(leitor, "nome_tecnico")
+                        });
+                    }
+                }
+            }
+            return lista;
+        }
+
+        /// <summary>Busca um orçamento/OS com cliente, veículo e técnico pelo Id.</summary>
+        public static Orcamento BuscarOrcamentoPorId(long id)
+        {
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"SELECT o.*, c.nome_razao AS nome_cliente, v.placa AS veiculo_placa, t.nome AS nome_tecnico
+FROM orcamentos o
+LEFT JOIN clientes c ON c.id=o.cliente_id
+LEFT JOIN veiculos v ON v.id=o.veiculo_id
+LEFT JOIN tecnicos t ON t.id=o.tecnico_id
+WHERE o.id=@id";
+                cmd.Parameters.AddWithValue("@id", id);
+                using (var leitor = cmd.ExecuteReader())
+                {
+                    if (leitor.Read())
+                    {
+                        var o = new Orcamento
+                        {
+                            Id = leitor.GetInt64(leitor.GetOrdinal("id")),
+                            Data = LerStr(leitor, "data"),
+                            ClienteId = LerLongNullable(leitor, "cliente_id"),
+                            VeiculoId = LerLongNullable(leitor, "veiculo_id"),
+                            Servico = LerStr(leitor, "servico"),
+                            Valor = leitor.GetDouble(leitor.GetOrdinal("valor")),
+                            Status = LerStr(leitor, "status"),
+                            Tipo = LerStr(leitor, "tipo"),
+                            Numero = LerStr(leitor, "numero"),
+                            NomeCliente = LerStr(leitor, "nome_cliente"),
+                            VeiculoPlaca = LerStr(leitor, "veiculo_placa"),
+                            NomeTecnico = LerStr(leitor, "nome_tecnico")
+                        };
+                        o.Itens = ListarItensOrcamento(id);
+                        return o;
+                    }
+                }
+            }
+            return null;
+        }
+
         public static void ExcluirOrcamento(long id)
         {
             using (var conn = Database.AbrirConexao())

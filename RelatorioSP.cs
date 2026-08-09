@@ -9,7 +9,7 @@ using Soen___Torrezim.Models;
 namespace Soen___Torrezim
 {
     /// <summary>Relatório de Serviços Prestados (agendamentos concluídos + orçamentos convertidos).</summary>
-    public partial class RelatorioSP : Form
+    public partial class RelatorioSP : BaseForm
     {
         private DataGridView grid;
         private Label lblTotal;
@@ -36,6 +36,7 @@ namespace Soen___Torrezim
             btnExportar.Click += (s, e) => RelatorioHelper.ExportarCsv(grid, "servicos_prestados.csv");
             btnImprimir = UIHelpers.CreateButton("Imprimir", new Point(268, 12), new Size(100, 28));
             btnImprimir.Click += (s, e) => RelatorioHelper.Imprimir(grid, "Soen - Serviços Prestados");
+            RelatorioHelper.AdicionarBotoesExportar(this, () => grid, "Soen - Serviços Prestados", "servicos_prestados", 376, 12);
             lblTotal = new Label { Text = "", AutoSize = true, Location = new Point(12, 48), Font = new Font("Segoe UI", 9, FontStyle.Bold) };
 
             grid = new DataGridView

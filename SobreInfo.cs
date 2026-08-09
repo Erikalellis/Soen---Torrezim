@@ -6,7 +6,7 @@ using Soen___Torrezim.Data;
 namespace Soen___Torrezim
 {
     /// <summary>Tela "Sobre / Informações" com dados do sistema, da empresa e créditos.</summary>
-    public partial class SobreInfo : Form
+    public partial class SobreInfo : BaseForm
     {
         public SobreInfo()
         {
