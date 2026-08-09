@@ -412,6 +412,34 @@ private void TrocarUsuario()
             _timerBackup = new System.Windows.Forms.Timer { Interval = 3600000 };
             _timerBackup.Tick += (s, ev) => BackupAgendado.VerificarAgenda();
             _timerBackup.Start();
+
+            VerificarAtualizacaoAuto();
+        }
+
+        /// <summary>Verifica, em segundo plano, se há nova versão e informa o usuário.</summary>
+        private async void VerificarAtualizacaoAuto()
+        {
+            try
+            {
+                Updater.ReleaseInfo release = null;
+                string erro = null;
+                bool ok = await System.Threading.Tasks.Task.Run(() =>
+                    Updater.VerificarAtualizacao(out release, out erro));
+                if (ok && Updater.TemNovidade(release) && !IsDisposed && IsHandleCreated)
+                {
+                    BeginInvoke(new Action(() =>
+                    {
+                        var r = MessageBox.Show(this,
+                            "Nova versão disponível: " + release.Tag + "\n\nDeseja abrir a tela de atualização?",
+                            "Atualização disponível", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                        if (r == DialogResult.Yes) Janelas.Abrir(() => new Atualizar());
+                    }));
+                }
+            }
+            catch
+            {
+                // falha na verificação não deve interromper o sistema
+            }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
