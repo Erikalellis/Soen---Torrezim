@@ -266,6 +266,11 @@ ServiceFabricBackup/
 *.ldf
 *.ndf
 
+# SQLite (bancos locais de uso/produção nunca vão para o repositório)
+*.db
+!dist/
+recibos/
+
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout

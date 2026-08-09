@@ -40,7 +40,26 @@ namespace Soen___Torrezim.Data
                     cmd.CommandText = ScriptTabelas;
                     cmd.ExecuteNonQuery();
                 }
+                CriarBackupAntesDeMigrar();
                 Migrar(conn);
+            }
+        }
+
+        /// <summary>
+        /// Caso o banco já exista, faz uma cópia de segurança na pasta "Backups"
+        /// antes de aplicar migrações (ALTER TABLE), para permitir recuperação caso
+        /// algo dê errado na evolução do esquema.
+        /// </summary>
+        private static void CriarBackupAntesDeMigrar()
+        {
+            try
+            {
+                if (File.Exists(CaminhoBanco))
+                    BackupAgendado.Executar();
+            }
+            catch
+            {
+                // migração segue mesmo sem backup extra
             }
         }
 
@@ -99,6 +118,31 @@ namespace Soen___Torrezim.Data
         public static object Nulo(string valor)
         {
             return string.IsNullOrWhiteSpace(valor) ? (object)DBNull.Value : valor.Trim();
+        }
+
+        /// <summary>
+        /// Executa <c>PRAGMA integrity_check</c> e informa se o banco está íntegro.
+        /// Deve ser chamado no início do uso (ex.: no Main), antes das operações.
+        /// </summary>
+        public static bool BancoIntegro()
+        {
+            try
+            {
+                using (var conn = AbrirConexao())
+                {
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.CommandText = "PRAGMA integrity_check";
+                        object resultado = cmd.ExecuteScalar();
+                        return resultado != null &&
+                               string.Equals(resultado.ToString(), "ok", StringComparison.OrdinalIgnoreCase);
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>Script de criação das tabelas (Fase 1).</summary>

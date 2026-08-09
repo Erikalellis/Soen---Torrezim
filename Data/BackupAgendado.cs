@@ -121,5 +121,29 @@ namespace Soen___Torrezim.Data
                 try { File.Delete(antigos[i]); } catch { }
             }
         }
+
+        /// <summary>
+        /// Restaura o backup mais recente (por nome de arquivo) de volta ao banco de
+        /// produção. Usado quando o banco é detectado corrompido (PRAGMA integrity_check).
+        /// Retorna o caminho do backup usado, ou null se não houver ou falhar.
+        /// </summary>
+        public static string RestaurarUltimo()
+        {
+            string dir = Destino;
+            if (!Directory.Exists(dir)) return null;
+            var arquivos = Directory.GetFiles(dir, "soen_*.db");
+            if (arquivos.Length == 0) return null;
+            Array.Sort(arquivos);                 // nomes ordenados = mais recente por último
+            string maisRecente = arquivos[arquivos.Length - 1];
+            try
+            {
+                File.Copy(maisRecente, Database.CaminhoBanco, true);
+                return maisRecente;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }

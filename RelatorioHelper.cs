@@ -105,6 +105,8 @@ namespace Soen___Torrezim
                     prev.ShowDialog();
                 }
                 render.ReleaseLogo();
+                ArquivarDocumentoPdf(linhas, nota ? "os" : "orcamento",
+                    string.IsNullOrWhiteSpace(o.Numero) ? o.Id.ToString("0000") : o.Numero);
             }
         }
 
@@ -160,6 +162,7 @@ namespace Soen___Torrezim
                     prev.ShowDialog();
                 }
                 render.ReleaseLogo();
+                ArquivarDocumentoPdf(linhas, "caixa", l.Id.ToString());
             }
         }
 
@@ -223,6 +226,7 @@ namespace Soen___Torrezim
                     prev.ShowDialog();
                 }
                 render.ReleaseLogo();
+                ArquivarDocumentoPdf(linhas, "fechamento_caixa", dia.ToString("yyyyMMdd"));
             }
         }
 
@@ -310,7 +314,79 @@ namespace Soen___Torrezim
                     prev.ShowDialog();
                 }
                 render.ReleaseLogo();
+                ArquivarDocumentoPdf(linhas, "venda", v.Id.ToString());
             }
+        }
+
+        /// <summary>
+        /// Arquiva o documento (recibo de venda/caixa, orçamento/OS) como PDF na pasta
+        /// do aplicativo (recibos\AAAA\MM\). Assim os documentos ficam salvos mesmo que
+        /// o banco venha a falhar. Falhas aqui não interrompem a impressão.
+        /// </summary>
+        private static void ArquivarDocumentoPdf(List<DocLine> linhas, string prefixo, string numero)
+        {
+            if (linhas == null || linhas.Count == 0) return;
+            try
+            {
+                string pasta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "recibos",
+                    DateTime.Now.ToString("yyyy"), DateTime.Now.ToString("MM"));
+                Directory.CreateDirectory(pasta);
+
+                string seguro = (numero ?? "").Replace("/", "-").Replace(":", "-");
+                string nome = (prefixo + "_" + seguro + "_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".pdf").Replace(" ", "_");
+                string caminho = Path.Combine(pasta, nome);
+
+                var bmp = RenderDocParaBitmap(linhas);
+                try
+                {
+                    Common.Exportacao.SalvarPdf(caminho, new List<Bitmap> { bmp });
+                }
+                finally
+                {
+                    bmp.Dispose();
+                }
+            }
+            catch { /* arquivamento é opcional */ }
+        }
+
+        /// <summary>Desenha as linhas de um documento em uma página A4 (para gerar o PDF).</summary>
+        private static Bitmap RenderDocParaBitmap(List<DocLine> linhas)
+        {
+            const int A4W = 794;
+            const int A4H = 1123;
+            var bmp = new Bitmap(A4W, A4H);
+            using (var g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.White);
+                float y = 60f;
+                foreach (DocLine l in linhas)
+                {
+                    Font fonte;
+                    switch (l.Style)
+                    {
+                        case DocStyle.Titulo: fonte = new Font("Arial", 15, FontStyle.Bold); break;
+                        case DocStyle.Subtitulo: fonte = new Font("Arial", 12, FontStyle.Bold); break;
+                        case DocStyle.Secao: fonte = new Font("Arial", 10, FontStyle.Bold); break;
+                        case DocStyle.Destaque: fonte = new Font("Arial", 11, FontStyle.Bold); break;
+                        default: fonte = new Font("Arial", 10); break;
+                    }
+                    using (fonte)
+                    {
+                        float h = g.MeasureString(l.Text, fonte).Height;
+                        if (l.Style == DocStyle.Titulo || l.Style == DocStyle.Subtitulo)
+                        {
+                            var sf = new StringFormat { Alignment = StringAlignment.Center };
+                            g.DrawString(l.Text, fonte, Brushes.Black, new RectangleF(60, y, A4W - 120, h), sf);
+                        }
+                        else
+                        {
+                            g.DrawString(l.Text, fonte, Brushes.Black, 60, y);
+                        }
+                        y += h + (l.Style == DocStyle.Secao ? 4f : 2f);
+                    }
+                }
+            }
+            return bmp;
         }
 
         private class DocLine
