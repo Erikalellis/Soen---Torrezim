@@ -81,6 +81,25 @@ namespace Soen___Torrezim
             itemSobre.Click += (s, e) => new SobreInfo().ShowDialog();
             itemConfig.DropDownItems.Add(itemSobre);
 
+            // ===== Menu SoenWebApi (WhatsApp) =====
+            var itemWebApi = new ToolStripMenuItem("SoenWebApi (WhatsApp)");
+            var itemWebStatus = new ToolStripMenuItem("Verificar Status");
+            itemWebStatus.Click += (s, e) => VerificarStatusWebApi();
+            var itemWebPainel = new ToolStripMenuItem("Abrir Painel no Navegador");
+            itemWebPainel.Click += (s, e) => AbrirPainelWebApi();
+            var itemWebDocs = new ToolStripMenuItem("Abrir Documentação da API");
+            itemWebDocs.Click += (s, e) => AbrirDocsWebApi();
+            itemWebApi.DropDownItems.Add(new ToolStripSeparator());
+            var itemWebIniciar = new ToolStripMenuItem("Iniciar SoenWebApi");
+            itemWebIniciar.Click += (s, e) => IniciarWebApi();
+            var itemWebParar = new ToolStripMenuItem("Parar SoenWebApi");
+            itemWebParar.Click += (s, e) => PararWebApi();
+            itemWebApi.DropDownItems.AddRange(new ToolStripItem[]
+            {
+                itemWebStatus, itemWebIniciar, itemWebParar,
+                new ToolStripSeparator(), itemWebPainel, itemWebDocs
+            });
+
             // ===== Menu Sair (fecha o programa) =====
             var itemSair = new ToolStripMenuItem("Sair");
             itemSair.Click += (s, e) => Close();
@@ -94,8 +113,9 @@ namespace Soen___Torrezim
             // seguida; "Configurações" e "Sair" ficam após "Serviços e Orçamentos".
             menuStrip1.Items.Insert(0, itemInicio);
             menuStrip1.Items.Insert(1, itemPesquisar);
-            menuStrip1.Items.Insert(7, itemConfig);
-            menuStrip1.Items.Insert(8, itemSair);
+            menuStrip1.Items.Insert(7, itemWebApi);
+            menuStrip1.Items.Insert(8, itemConfig);
+            menuStrip1.Items.Insert(9, itemSair);
 
             ConsolidarMenuOutros();
             AplicarPermissoes();
@@ -142,7 +162,66 @@ if (Sessao.UsuarioAtual != null)
                     (admin ? " (administrador)" : " (operador)");
         }
 
-private void TrocarUsuario()
+private async void VerificarStatusWebApi()
+        {
+            string pasta = SoenWebApiManager.Localizar();
+            if (pasta == null)
+            {
+                MessageBox.Show("A SoenWebApi (WhatsApp) não foi instalada neste computador.\n" +
+                    "Reinstale o SOEN marcando a opção \"SoenWebApi\".",
+                    "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            bool online = await SoenWebApiManager.EstahOnlineAsync();
+            string msg = online
+                ? "SoenWebApi: ONLINE.\n\nURL: " + SoenWebApiManager.UrlBase + "\nPainel: " + SoenWebApiManager.UrlPainel
+                : "SoenWebApi: OFFLINE.\n\nO serviço não está respondendo.\nUse \"Iniciar SoenWebApi\" para iniciar.";
+            MessageBox.Show(msg, "SoenWebApi - Status", MessageBoxButtons.OK,
+                online ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        }
+
+        private void AbrirPainelWebApi()
+        {
+            if (SoenWebApiManager.Localizar() == null)
+            {
+                MessageBox.Show("A SoenWebApi não foi instalada.\nReinstale o SOEN marcando a opção \"SoenWebApi\".",
+                    "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            SoenWebApiManager.AbrirNavegador(SoenWebApiManager.UrlPainel);
+        }
+
+        private void AbrirDocsWebApi()
+        {
+            if (SoenWebApiManager.Localizar() == null)
+            {
+                MessageBox.Show("A SoenWebApi não foi instalada.\nReinstale o SOEN marcando a opção \"SoenWebApi\".",
+                    "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            SoenWebApiManager.AbrirNavegador(SoenWebApiManager.UrlDocs);
+        }
+
+        private void IniciarWebApi()
+        {
+            if (!SoenWebApiManager.Iniciar())
+            {
+                MessageBox.Show("Não foi possível iniciar a SoenWebApi.\nConfirme se ela foi instalada (pasta SoenWebApi ao lado do aplicativo).",
+                    "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            MessageBox.Show("SoenWebApi iniciando...\n\nUma janela de serviços será aberta.\n" +
+                "Aguarde alguns segundos e verifique o Status ou abra o Painel para conectar o WhatsApp.",
+                "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void PararWebApi()
+        {
+            SoenWebApiManager.Parar();
+            MessageBox.Show("SoenWebApi encerrada.", "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void TrocarUsuario()
         {
             Hide();
             using (var login = new Login())

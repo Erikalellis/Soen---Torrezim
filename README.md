@@ -6,7 +6,7 @@ Sistema de gestão para oficina de radiadores (SOEN). Desenvolvido em **C# WinFo
 
 ## Status
 
-- ✅ **Sistema completo em produção** (versão 1.1.2)
+- ✅ **Sistema completo em produção** (versão 1.1.3)
 - ✅ 45+ telas funcionais: cadastros, operação, financeiro, estoque, relatórios, segurança
 - ✅ Auto-atualização via GitHub Releases
 - ✅ Robustez: backup antes de migrações, verificação de integridade do banco com restauração automática, arquivamento de documentos em PDF
@@ -26,7 +26,7 @@ Sistema de gestão para oficina de radiadores (SOEN). Desenvolvido em **C# WinFo
 | **Segurança** | Login com senha PBKDF2, perfis **admin** e **operador**, permissões por perfil |
 | **Recursos** | Backup automático agendado, Restauração, Exportação contábil (CSV), Pesquisa Global (Ctrl+F), Impressão de recibos/OS, Calendário de agendamentos, Dashboard |
 | **Robustez** | Backup automático antes de migrações, verificação de integridade do banco (PRAGMA) com restauração do último backup, arquivamento automático de documentos em PDF (`recibos\AAAA\MM\`) |
-| **WhatsApp (SoenWebApi)** | Serviço local embutido para envio de avisos e lembretes via WhatsApp Web *(em integração — roadmap)* |
+| **WhatsApp (SoenWebApi)** | Controle pelo menu **SoenWebApi (WhatsApp)** do app: Iniciar/Parar/Status/Abrir Painel (`/admin`) e Documentação (`/docs`). Serviço local embutido (Node.js + Chromium portáteis), sem abrir Chromium automaticamente |
 
 ## Estrutura de pastas
 
@@ -108,9 +108,11 @@ O pacote completo fica em `dist\pendrive\SOEN - TORREZIM Pendrive\` (~740 MB) e 
 
 **Como instalar:** conectar o pendrive → duplo clique em `Instalar.bat` → aguardar a cópia (~poucos minutos) → atalho criado no Desktop. **Sem instalar Node.js nem Chrome** — o pacote traz os dois embutidos.
 
-**WhatsApp (primeiro uso):** rodar `SoenWebApi\IniciarWebApi.bat` → abrir `http://localhost:3000/admin` no navegador → escanear o QR Code com o WhatsApp do celular da empresa.
+**WhatsApp (primeiro uso):** dentro do SOEN, abrir o menu **SoenWebApi (WhatsApp)** → **Iniciar SoenWebApi** → **Abrir Painel no Navegador** (`http://localhost:3000/admin`) → escanear o QR Code com o WhatsApp do celular da empresa.
 
-> Observação: a integração do SOEN com a SoenWebApi (envio de avisos/lembretes pelo app) está no roadmap. O serviço já roda de forma independente.
+> O instalador **não abre** o Chromium/navegador automaticamente ao terminar. O controle da SoenWebApi (Iniciar / Parar / Status / Abrir Painel / Documentação) ficou disponível no menu **SoenWebApi (WhatsApp)** dentro do aplicativo.
+
+> A integração do SOEN com a SoenWebApi (envio de avisos/lembretes pelo app) está no roadmap. O serviço já roda de forma independente, com controle a partir do menu **SoenWebApi (WhatsApp)** do aplicativo.
 
 ### Opção 2 — Apenas o aplicativo (ZIP da Release, ~4 MB)
 

@@ -119,6 +119,7 @@
     <Compile Include="Common\Exportacao.cs" />
     <Compile Include="Common\Updater.cs" />
     <Compile Include="Common\Janelas.cs" />
+    <Compile Include="Common\SoenWebApiManager.cs" />
     <Compile Include="Common\Sessao.cs" />
     <Compile Include="Data\Database.cs" />
     <Compile Include="Data\ConfigDAO.cs" />
