@@ -100,12 +100,28 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Data.SQLite">
+      <HintPath>$(UserProfile)\.nuget\packages\stub.system.data.sqlite.core.netframework\1.0.119\lib\net46\System.Data.SQLite.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
     <Reference Include="System.Resources.Extensions">
       <HintPath>$(UserProfile)\.nuget\packages\system.resources.extensions\6.0.0\lib\net461\System.Resources.Extensions.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>$(UserProfile)\.nuget\packages\stub.system.data.sqlite.core.netframework\1.0.119\lib\net46\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Memory">
+      <HintPath>$(UserProfile)\.nuget\packages\system.memory\4.5.5\lib\net461\System.Memory.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.Buffers">
+      <HintPath>$(UserProfile)\.nuget\packages\system.buffers\4.5.1\lib\net461\System.Buffers.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe">
+      <HintPath>$(UserProfile)\.nuget\packages\system.runtime.compilerservices.unsafe\4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors">
+      <HintPath>$(UserProfile)\.nuget\packages\system.numerics.vectors\4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
       <Private>true</Private>
     </Reference>
   </ItemGroup>
