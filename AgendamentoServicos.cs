@@ -197,6 +197,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             var id = AgendamentoSelecionado();
             if (!id.HasValue) return;
             if (MessageBox.Show("Excluir este agendamento?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

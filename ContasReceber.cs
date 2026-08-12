@@ -265,6 +265,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             var id = ContaSelecionada();
             if (!id.HasValue) return;
             if (MessageBox.Show("Excluir esta conta?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

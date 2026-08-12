@@ -92,15 +92,22 @@ namespace Soen___Torrezim.Data
             if (!File.Exists(Database.CaminhoBanco)) return null;
             string dir = Destino;
             try { Directory.CreateDirectory(dir); }
-            catch { return null; }
+            catch (Exception ex) { Logger.LogError(ex); return null; }
 
             string arquivo = Path.Combine(dir, "soen_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".db");
             try
             {
-                File.Copy(Database.CaminhoBanco, arquivo, true);
+                System.Data.SQLite.SQLiteConnection.ClearAllPools();
+                using (var origem = Database.AbrirConexao())
+                using (var destino = new System.Data.SQLite.SQLiteConnection("Data Source=" + arquivo))
+                {
+                    destino.Open();
+                    origem.BackupDatabase(destino, "main", "main", -1, null, -1);
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError(ex);
                 return null;
             }
 
@@ -118,7 +125,7 @@ namespace Soen___Torrezim.Data
             Array.Sort(antigos);
             for (int i = 0; i < antigos.Length - retor; i++)
             {
-                try { File.Delete(antigos[i]); } catch { }
+                try { File.Delete(antigos[i]); } catch (Exception ex) { Logger.LogError(ex); }
             }
         }
 
@@ -137,11 +144,13 @@ namespace Soen___Torrezim.Data
             string maisRecente = arquivos[arquivos.Length - 1];
             try
             {
+                System.Data.SQLite.SQLiteConnection.ClearAllPools();
                 File.Copy(maisRecente, Database.CaminhoBanco, true);
                 return maisRecente;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError(ex);
                 return null;
             }
         }

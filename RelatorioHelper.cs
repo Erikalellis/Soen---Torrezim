@@ -426,7 +426,7 @@ namespace Soen___Torrezim
                 if (usaLogo)
                 {
                     try { e.Graphics.DrawImage(_logo, e.MarginBounds.Left, e.MarginBounds.Top, 100f, 64f); }
-                    catch { }
+                    catch (Exception ex) { Logger.LogError(ex); }
                 }
                 _primeiraPagina = false;
 
@@ -627,7 +627,7 @@ namespace Soen___Torrezim
             {
                 doc.DefaultPageSettings.PaperSize = new System.Drawing.Printing.PaperSize("A4", 827, 1169);
             }
-            catch { }
+            catch (Exception ex) { Logger.LogError(ex); }
         }
 
         /// <summary>Carrega a imagem da logo da empresa (ou null se não configurada).</summary>
@@ -636,9 +636,12 @@ namespace Soen___Torrezim
             try
             {
                 if (emp != null && !string.IsNullOrWhiteSpace(emp.LogoPath) && System.IO.File.Exists(emp.LogoPath))
-                    return Image.FromFile(emp.LogoPath);
+                {
+                    using (var img = Image.FromFile(emp.LogoPath))
+                        return new Bitmap(img);
+                }
             }
-            catch { }
+            catch (Exception ex) { Logger.LogError(ex); }
             return null;
         }
 
@@ -704,7 +707,7 @@ namespace Soen___Torrezim
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex) { Logger.LogError(ex); }
 
                     e.Graphics.DrawString(_titulo, fTitulo, Brushes.Black, margem + logoOffsetX, y);
                     y += 30f;

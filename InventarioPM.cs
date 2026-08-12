@@ -177,6 +177,7 @@ namespace Soen___Torrezim
 
         private void ExcluirProduto()
         {
+            if (!Sessao.PrepararExclusao()) return;
             if (grid.SelectedRows.Count == 0) return;
             var id = Convert.ToInt64(grid.SelectedRows[0].Cells["Id"].Value);
             if (MessageBox.Show("Excluir este produto (e seu histórico de movimentações)?", "Confirmar",

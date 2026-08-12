@@ -38,11 +38,14 @@ namespace Soen___Torrezim
             {
                 if (!string.IsNullOrWhiteSpace(emp.LogoPath) && System.IO.File.Exists(emp.LogoPath))
                 {
-                    logo.Image = Image.FromFile(emp.LogoPath);
+                    using (var img = Image.FromFile(emp.LogoPath))
+                    {
+                        logo.Image = new Bitmap(img);
+                    }
                     temLogo = true;
                 }
             }
-            catch { }
+            catch (Exception ex) { Logger.LogError(ex); }
 
             var lblTitulo = new Label
             {

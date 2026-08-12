@@ -301,6 +301,7 @@ namespace Soen___Torrezim
 
         private void ExcluirVenda()
         {
+            if (!Sessao.PrepararExclusao()) return;
             if (gridVendas.SelectedRows.Count == 0) return;
             var id = Convert.ToInt64(gridVendas.SelectedRows[0].Cells["Id"].Value);
             if (MessageBox.Show("Excluir a venda nº " + id + "?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

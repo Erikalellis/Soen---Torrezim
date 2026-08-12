@@ -189,8 +189,13 @@ VALUES (@data, @cli, @vei, @serv, @valor, @status, @tipo, @numero, @tec, @com)";
             long n = 0;
             using (var cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "SELECT COUNT(*) FROM orcamentos WHERE tipo='nota'";
-                n = (long)cmd.ExecuteScalar();
+                // Usa o maior número existente (MAX), e não COUNT, para não
+                // reutilizar numeração quando uma OS é excluída.
+                cmd.CommandText = @"SELECT MAX(CAST(REPLACE(numero,'OS-','') AS INTEGER))
+FROM orcamentos WHERE tipo='nota' AND numero LIKE 'OS-%'";
+                object v = cmd.ExecuteScalar();
+                if (v != null && v != System.DBNull.Value)
+                    long.TryParse(v.ToString(), out n);
             }
             return "OS-" + (n + 1).ToString("0000");
         }
@@ -407,18 +412,6 @@ VALUES (@o, @d, @q, @vu, @p)";
             List<OrcamentoItem> itens = ListarItensOrcamento(orcamentoId);
             if (itens.Count == 0) return;
 
-            // Valida o saldo de estoque ANTES de criar a venda (evita venda sem baixa).
-            foreach (var it in itens)
-            {
-                if (!it.ProdutoId.HasValue || it.Quantidade <= 0) continue;
-                Produto p = ProdutoDAO.BuscarPorId(it.ProdutoId.Value);
-                if (p == null)
-                    throw new InvalidOperationException("Peça vinculada não encontrada no estoque: " + it.Descricao);
-                if (p.QtdAtual < it.Quantidade)
-                    throw new InvalidOperationException("Estoque insuficiente para " + it.Descricao +
-                        " (disponível: " + p.QtdAtual.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("pt-BR")) + ").");
-            }
-
             string refDoc = (string.IsNullOrWhiteSpace(o.Numero) ? "#" + o.Id : o.Numero);
             string docEstoque = "OS " + refDoc;
 
@@ -476,10 +469,22 @@ VALUES (@vid,@desc,@q,@vu)";
                     }
                 }
 
-                // Baixa de estoque (movimentação + atualização da quantidade)
+                // Baixa de estoque (movimentação + atualização da quantidade).
+                // A validação e o decremento são atômicos na transação
+                // (evita estouro de estoque sob concorrência).
                 foreach (var it in itens)
                 {
                     if (!it.ProdutoId.HasValue || it.Quantidade <= 0) continue;
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = "UPDATE produtos SET qtd_atual = qtd_atual - @q WHERE id=@id AND qtd_atual >= @q";
+                        cmd.Parameters.AddWithValue("@q", it.Quantidade);
+                        cmd.Parameters.AddWithValue("@id", it.ProdutoId.Value);
+                        if (cmd.ExecuteNonQuery() == 0)
+                            throw new InvalidOperationException("Estoque insuficiente para " + it.Descricao +
+                                ". A conversão em venda foi cancelada.");
+                    }
                     using (var cmd = conn.CreateCommand())
                     {
                         cmd.Transaction = tx;
@@ -487,14 +492,6 @@ VALUES (@vid,@desc,@q,@vu)";
                         cmd.Parameters.AddWithValue("@p", it.ProdutoId.Value);
                         cmd.Parameters.AddWithValue("@q", it.Quantidade);
                         cmd.Parameters.AddWithValue("@doc", Database.Nulo(docEstoque));
-                        cmd.ExecuteNonQuery();
-                    }
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = "UPDATE produtos SET qtd_atual = qtd_atual - @q WHERE id=@id";
-                        cmd.Parameters.AddWithValue("@q", it.Quantidade);
-                        cmd.Parameters.AddWithValue("@id", it.ProdutoId.Value);
                         cmd.ExecuteNonQuery();
                     }
                 }

@@ -82,7 +82,7 @@ namespace Soen___Torrezim
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { Logger.LogError(ex); }
             return PortaPadrao;
         }
 
@@ -124,7 +124,9 @@ namespace Soen___Torrezim
                 {
                     FileName = bat,
                     WorkingDirectory = dir,
-                    UseShellExecute = true
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true
                 };
                 Process.Start(psi);
                 return true;
@@ -142,6 +144,8 @@ namespace Soen___Torrezim
             if (dir == null) return;
             try
             {
+                // node: usa taskkill /T /F para derrubar a arvore de processos,
+                // matando tambem o Chromium filho do Puppeteer (evita processos orfaos).
                 string raizNode = Path.Combine(dir, "node") + Path.DirectorySeparatorChar;
                 foreach (var p in Process.GetProcessesByName("node"))
                 {
@@ -149,9 +153,9 @@ namespace Soen___Torrezim
                     {
                         string path = p.MainModule != null ? p.MainModule.FileName : null;
                         if (path != null && path.StartsWith(raizNode, StringComparison.OrdinalIgnoreCase))
-                            p.Kill();
+                            MatarArvore(p.Id);
                     }
-                    catch { }
+                    catch (Exception ex) { Logger.LogError(ex); }
                 }
                 string raizChromium = Path.Combine(dir, "ChromiumPortable") + Path.DirectorySeparatorChar;
                 foreach (var p in Process.GetProcessesByName("chrome"))
@@ -160,10 +164,28 @@ namespace Soen___Torrezim
                     {
                         string path = p.MainModule != null ? p.MainModule.FileName : null;
                         if (path != null && path.StartsWith(raizChromium, StringComparison.OrdinalIgnoreCase))
-                            p.Kill();
+                            MatarArvore(p.Id);
                     }
-                    catch { }
+                    catch (Exception ex) { Logger.LogError(ex); }
                 }
+            }
+            catch (Exception ex) { Logger.LogError(ex); }
+        }
+
+        /// <summary>Mata um processo e toda a sua arvore via taskkill.</summary>
+        private static void MatarArvore(int pid)
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "taskkill",
+                    Arguments = "/PID " + pid + " /T /F",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+                Process.Start(psi);
             }
             catch { }
         }

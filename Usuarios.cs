@@ -139,6 +139,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             var id = SelecionadoId();
             if (!id.HasValue) return;
             if (MessageBox.Show("Excluir este usuário?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

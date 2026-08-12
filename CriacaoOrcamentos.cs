@@ -427,6 +427,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             var id = Selecionado();
             if (!id.HasValue) return;
             if (MessageBox.Show("Excluir este orçamento?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

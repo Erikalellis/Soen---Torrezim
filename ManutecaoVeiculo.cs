@@ -193,6 +193,7 @@ namespace Soen___Torrezim
 
         private void ExcluirManutencao()
         {
+            if (!Sessao.PrepararExclusao()) return;
             var m = ManutencaoSelecionada();
             if (m == null)
             {

@@ -114,6 +114,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             long id = SelecionadoId();
             if (id <= 0) return;
             if (MessageBox.Show("Excluir este serviço?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

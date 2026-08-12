@@ -143,6 +143,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             if (grid.SelectedRows.Count == 0) return;
             long id = Convert.ToInt64(grid.SelectedRows[0].Cells["Id"].Value);
             if (MessageBox.Show("Excluir este fornecedor?", "Confirmar", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)

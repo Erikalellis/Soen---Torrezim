@@ -149,6 +149,7 @@ namespace Soen___Torrezim
 
         private void ExcluirPagamento()
         {
+            if (!Sessao.PrepararExclusao()) return;
             if (gridHistorico.SelectedRows.Count == 0)
             {
                 MessageBox.Show("Selecione um pagamento no histórico.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);

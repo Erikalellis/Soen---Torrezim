@@ -29,7 +29,11 @@ namespace Soen___Torrezim.Data
         {
             var sb = new SQLiteConnectionStringBuilder
             {
-                DataSource = CaminhoBanco
+                DataSource = CaminhoBanco,
+                JournalMode = SQLiteJournalModeEnum.Wal,
+                BusyTimeout = 30000,
+                DefaultTimeout = 30,
+                Pooling = true
             };
             _connectionString = sb.ConnectionString;
 
@@ -78,6 +82,11 @@ namespace Soen___Torrezim.Data
             AdicionarColunaSeFaltar(conn, "veiculos", "licenciamento_venc", "TEXT");
             AdicionarColunaSeFaltar(conn, "orcamento_itens", "produto_id", "INTEGER");
             AdicionarColunaSeFaltar(conn, "financeiro", "data_pagamento", "TEXT");
+            AdicionarColunaSeFaltar(conn, "empresa", "background_image", "TEXT");
+            AdicionarColunaSeFaltar(conn, "empresa", "background_mode", "TEXT DEFAULT 'stretch'");
+            AdicionarColunaSeFaltar(conn, "empresa", "logo_path", "TEXT");
+            AdicionarColunaSeFaltar(conn, "empresa", "logo_width", "INTEGER DEFAULT 0");
+            AdicionarColunaSeFaltar(conn, "empresa", "logo_height", "INTEGER DEFAULT 0");
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",

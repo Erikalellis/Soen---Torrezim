@@ -8,6 +8,7 @@ namespace Soen___Torrezim
     {
         protected StatusStrip BaseStatusStrip;
         protected ToolStripStatusLabel BaseStatusLabel;
+        private Image _backupBackground;
 
         public BaseForm()
         {
@@ -46,8 +47,10 @@ namespace Soen___Torrezim
                     string path = cfg.BackgroundImagePath;
                     if (System.IO.File.Exists(path))
                     {
+                        if (_backupBackground != null) _backupBackground.Dispose();
                         var img = Image.FromFile(path);
                         this.BackgroundImage = img;
+                        _backupBackground = img;
                         switch ((cfg.BackgroundMode ?? "stretch").ToLower())
                         {
                             case "center": this.BackgroundImageLayout = ImageLayout.Center; break;
@@ -62,6 +65,16 @@ namespace Soen___Torrezim
                 // não interrompe a UI
                 Logger.LogError(ex);
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && _backupBackground != null)
+            {
+                _backupBackground.Dispose();
+                _backupBackground = null;
+            }
+            base.Dispose(disposing);
         }
 
         private void StandardizeControls(Control parent)

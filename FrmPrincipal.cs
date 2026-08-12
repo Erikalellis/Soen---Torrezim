@@ -17,7 +17,7 @@ namespace Soen___Torrezim
         public FrmPrincipal()
         {
             InitializeComponent();
-            var itemInicio = new ToolStripMenuItem("Painel Inicial (Dashboard)");
+            var itemInicio = new ToolStripMenuItem("Painel Inicial");
             itemInicio.Click += (s, e) => Janelas.Abrir(() => new DashboardPrincipal());
 
             var itemServicos = new ToolStripMenuItem("Cadastro de Serviços");
@@ -82,7 +82,7 @@ namespace Soen___Torrezim
             itemConfig.DropDownItems.Add(itemSobre);
 
             // ===== Menu SoenWebApi (WhatsApp) =====
-            var itemWebApi = new ToolStripMenuItem("SoenWebApi (WhatsApp)");
+            var itemWebApi = new ToolStripMenuItem("SoenWebApi");
             var itemWebStatus = new ToolStripMenuItem("Verificar Status");
             itemWebStatus.Click += (s, e) => VerificarStatusWebApi();
             var itemWebPainel = new ToolStripMenuItem("Abrir Painel no Navegador");
@@ -210,7 +210,7 @@ private async void VerificarStatusWebApi()
                     "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            MessageBox.Show("SoenWebApi iniciando...\n\nUma janela de serviços será aberta.\n" +
+            MessageBox.Show("SoenWebApi iniciando em segundo plano...\n\n" +
                 "Aguarde alguns segundos e verifique o Status ou abra o Painel para conectar o WhatsApp.",
                 "SoenWebApi", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -515,15 +515,16 @@ private async void VerificarStatusWebApi()
                     }));
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // falha na verificação não deve interromper o sistema
+                Logger.LogError(ex);
             }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            try { BackupAgendado.VerificarAgenda(true); } catch { }
+            try { BackupAgendado.VerificarAgenda(true); } catch (Exception ex) { Logger.LogError(ex); }
             base.OnFormClosing(e);
         }
 

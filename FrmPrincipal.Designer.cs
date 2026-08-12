@@ -147,7 +147,7 @@
             this.toolStripMenuItem1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripMenuItem1.Image")));
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(142, 20);
-            this.toolStripMenuItem1.Text = "Controle de Clientes";
+            this.toolStripMenuItem1.Text = "Clientes";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
             // 
             // cadastroDeClientesToolStripMenuItem
@@ -200,7 +200,7 @@
             this.toolStripMenuItem2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripMenuItem2.Image")));
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
             this.toolStripMenuItem2.Size = new System.Drawing.Size(143, 20);
-            this.toolStripMenuItem2.Text = "Controle de Veículos";
+            this.toolStripMenuItem2.Text = "Veículos";
             // 
             // cadastroDeVeículosToolStripMenuItem
             // 
@@ -244,7 +244,7 @@
             this.toolStripMenuItem3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripMenuItem3.Image")));
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
             this.toolStripMenuItem3.Size = new System.Drawing.Size(165, 20);
-            this.toolStripMenuItem3.Text = "Fornecedores e Credores";
+            this.toolStripMenuItem3.Text = "Fornecedores";
             // 
             // fornecedoresECredoresToolStripMenuItem
             // 
@@ -288,7 +288,7 @@
             this.toolStripMenuItem4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripMenuItem4.Image")));
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
             this.toolStripMenuItem4.Size = new System.Drawing.Size(155, 20);
-            this.toolStripMenuItem4.Text = "Vendas, Fluxo de Caixa";
+            this.toolStripMenuItem4.Text = "Vendas";
             // 
             // registroDeVendasToolStripMenuItem
             // 
@@ -336,7 +336,7 @@
             this.toolStripMenuItem5.Image = ((System.Drawing.Image)(resources.GetObject("toolStripMenuItem5.Image")));
             this.toolStripMenuItem5.Name = "toolStripMenuItem5";
             this.toolStripMenuItem5.Size = new System.Drawing.Size(155, 20);
-            this.toolStripMenuItem5.Text = "Serviços e Orçamentos";
+            this.toolStripMenuItem5.Text = "Serviços";
             // 
             // agendamentoDeServiçosToolStripMenuItem
             // 
@@ -412,7 +412,7 @@
             this.toolStripMenuItem6.Image = ((System.Drawing.Image)(resources.GetObject("toolStripMenuItem6.Image")));
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
             this.toolStripMenuItem6.Size = new System.Drawing.Size(142, 20);
-            this.toolStripMenuItem6.Text = "Controle de Estoque";
+            this.toolStripMenuItem6.Text = "Estoque";
             // 
             // entradaDeEstoqueToolStripMenuItem
             // 

@@ -152,6 +152,7 @@ namespace Soen___Torrezim
 
         private void Excluir()
         {
+            if (!Sessao.PrepararExclusao()) return;
             var c = ClienteSelecionado();
             if (c == null)
             {

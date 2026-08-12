@@ -70,7 +70,7 @@ namespace Soen___Torrezim
                 totalOs += t.Quantidade;
                 if (t.Quantidade > 0) tecnicos++;
             }
-            double mediaGeral = tecnicos == 0 ? 0 : somaHoras / totalOs;
+            double mediaGeral = totalOs == 0 ? 0 : somaHoras / totalOs;
             lblTotal.Text = totalOs == 0
                 ? "Nenhuma OS concluída com técnico registrado ainda."
                 : "OS concluídas: " + totalOs + "  |  Média geral de atendimento: " +
