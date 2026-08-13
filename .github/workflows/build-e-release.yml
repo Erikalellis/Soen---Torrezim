@@ -44,9 +44,3 @@ jobs:
           & $gh release create $tag "soen-app.zip" --repo $env:GITHUB_REPOSITORY --title "Soen - Torrezim $tag" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: soen-app
-          path: soen-app.zip
