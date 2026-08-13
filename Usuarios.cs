@@ -119,19 +119,38 @@ namespace Soen___Torrezim
             u.Ativo = chkAtivo.Checked;
             if (u.Id == 0)
             {
-                u.Senha = string.IsNullOrWhiteSpace(txtSenha.Text) ? "1234" : txtSenha.Text;
+                bool senhaPadrao = string.IsNullOrWhiteSpace(txtSenha.Text);
+                string senha = senhaPadrao ? "1234" : txtSenha.Text;
+                if (!senhaPadrao && !UsuarioDAO.SenhaForte(senha))
+                {
+                    MessageBox.Show("A senha deve ter ao menos " + UsuarioDAO.SenhaMinima +
+                        " caracteres.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtSenha.Focus();
+                    return;
+                }
                 if (UsuarioDAO.ExisteUsuario(u.Login))
                 {
                     MessageBox.Show("Já existe um usuário com esse nome.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+                u.Senha = senha;
+                u.TrocarSenha = senhaPadrao; // senha "1234" provisória: exige troca no 1º login
                 UsuarioDAO.Salvar(u);
             }
             else
             {
                 UsuarioDAO.Salvar(u);
                 if (!string.IsNullOrWhiteSpace(txtSenha.Text))
+                {
+                    if (!UsuarioDAO.SenhaForte(txtSenha.Text))
+                    {
+                        MessageBox.Show("A senha deve ter ao menos " + UsuarioDAO.SenhaMinima +
+                            " caracteres.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        txtSenha.Focus();
+                        return;
+                    }
                     UsuarioDAO.AtualizarSenha(u.Id, txtSenha.Text);
+                }
             }
             Carregar();
             Limpar();

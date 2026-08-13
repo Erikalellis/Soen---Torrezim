@@ -1,0 +1,12 @@
+node_modules
+ChromiumPortable
+chromium
+.git
+.gitignore
+README.md
+sessions
+data
+media
+*.log
+.DS_Store
+Thumbs.db

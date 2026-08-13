@@ -1,0 +1,230 @@
+{
+  "mode": "single",
+  "port": 3000,
+  "botName": "Minha Empresa",
+  "botEnabled": true,
+  "vacationMode": false,
+  "vacationMessage": "Ola! Estamos em ferias ate 15/08. Para urgencias, entre em contato pelo telefone (11) 99999-8888. Obrigado!",
+  "controllerNumber": "",
+  "humanResetHours": 24,
+  "messageTtlMinutes": 60,
+  "openaiModel": "gpt-4o-mini",
+  "aiProvider": "openai",
+  "ollamaUrl": "http://localhost:11434",
+  "ollamaModel": "llama3",
+  "webhookUrl": "",
+  "webhookSecret": "",
+  "chromiumPath": "",
+  "proxy": null,
+  "rateLimit": {
+    "windowMinutes": 15,
+    "maxRequests": 100
+  },
+  "clients": [
+    {
+      "id": "principal",
+      "name": "Principal",
+      "greetings": [
+        "oi",
+        "ola",
+        "bom dia",
+        "boa tarde",
+        "boa noite",
+        "menu",
+        "iniciar",
+        "start",
+        "help",
+        "ajuda"
+      ],
+      "greetingMessage": "🦾 *DDS: ZAP-API*\n\nBem-vindo(a)! Digite o numero da opcao desejada:\n\n1️⃣ *Atendimento*\n2️⃣ *Financeiro*\n3️⃣ *Suporte Tecnico*\n4️⃣ *Falar com Humano*\n5️⃣ *Reclame Aqui*\n\nOu digite sua mensagem que responderei automaticamente.",
+      "fallbackMessage": "🤖 Desculpe, nao entendi. Digite *MENU* para ver as opcoes disponiveis.",
+      "intents": [
+        {
+          "patterns": [
+            "1",
+            "atendimento",
+            "quero falar com atendente",
+            "falar com alguem"
+          ],
+          "response": "Ola! Agora voce esta sendo atendido por um de nossos atendentes. Em breve entraremos em contato.\n\nEnquanto isso, ja deixe seu nome e numero para contato.",
+          "redirect": true
+        },
+        {
+          "patterns": [
+            "2",
+            "financeiro",
+            "boleto",
+            "fatura",
+            "pagamento",
+            "divida",
+            "pagar"
+          ],
+          "response": "Para questoes financeiras, voce sera redirecionado para nosso setor financeiro.\n\nPor favor, informe seu CPF ou numero do contrato.",
+          "redirect": true
+        },
+        {
+          "patterns": [
+            "3",
+            "suporte",
+            "tecnico",
+            "problema",
+            "erro",
+            "nao funciona",
+            "quebrou",
+            "bug",
+            "falha"
+          ],
+          "response": "Suporte tecnico sera direcionado para nossa equipe especializada.\n\nDescreva resumidamente o problema que esta ocorrendo:",
+          "redirect": true
+        },
+        {
+          "patterns": [
+            "4",
+            "humano",
+            "atendente",
+            "pessoa",
+            "quero falar com uma pessoa",
+            "transferir"
+          ],
+          "response": "Voce sera transferido para um atendente humano. Por favor, aguarde um momento.\n\nEnquanto isso, ja nos diga qual o assunto:",
+          "redirect": true
+        },
+        {
+          "patterns": [
+            "5",
+            "reclamacao",
+            "reclamar",
+            "reclame aqui",
+            "sugestao",
+            "elogio",
+            "ouvidoria"
+          ],
+          "response": "Sua reclamacao/sugestao e muito importante para nos!\n\nPor favor, descreva detalhadamente sua mensagem que encaminharemos para nossa ouvidoria.",
+          "redirect": true
+        },
+        {
+          "patterns": [
+            "orcamento",
+            "quanto custa",
+            "preco",
+            "valor",
+            "tabela",
+            "investimento",
+            "contratar"
+          ],
+          "response": "Obrigado pelo interesse! 🎯\n\nNossos consultores comerciais entrarao em contato em ate 24h uteis com uma proposta personalizada para voce.\n\nPara agilizar, informe seu nome e melhor horario para contato:",
+          "redirect": true
+        },
+        {
+          "patterns": [
+            "obrigado",
+            "valeu",
+            "brigado",
+            "obrigada",
+            "thanks",
+            "thank",
+            "agradecido"
+          ],
+          "response": "Por nada! 😊 Estamos aqui para ajudar. Se precisar de algo, e so chamar!",
+          "redirect": false
+        },
+        {
+          "patterns": [
+            "tchau",
+            "ate logo",
+            "xau",
+            "bye",
+            "encerrar",
+            "sair",
+            "finalizar"
+          ],
+          "response": "Foi um prazer atender voce! 😄\n\nSe precisar novamente, estaremos aqui.\n\n*DDS: ZAP-API* - Sua empresa mais inteligente! 🚀",
+          "redirect": false
+        },
+        {
+          "patterns": [
+            "horario",
+            "funcionamento",
+            "horario de atendimento",
+            "aberto",
+            "horas"
+          ],
+          "response": "📅 *Horario de Atendimento:*\n\nSeg a Sex: 08h as 18h\nSab: 08h as 12h\nDom: Fechado\n\nFeriados: plantao reduzido das 09h as 13h.",
+          "redirect": false
+        },
+        {
+          "patterns": [
+            "endereco",
+            "localizacao",
+            "onde fica",
+            "visitar",
+            "sede",
+            "escritorio"
+          ],
+          "response": "📍 *Nosso Endereco:*\n\nRua Exemplo, 123 - Centro\nSao Paulo - SP\nCEP 01000-000\n\nGoogle Maps: https://maps.app.goo.gl/exemplo",
+          "redirect": false
+        },
+        {
+          "patterns": [
+            "contato",
+            "telefone",
+            "whatsapp",
+            "email",
+            "falar",
+            "ligar",
+            "zap"
+          ],
+          "response": "📞 *Canais de Atendimento:*\n\nWhatsApp: (11) 99999-8888\nTelefone: (11) 3333-4444\nEmail: contato@minhaempresa.com.br\n\nOu continue aqui mesmo que ja estamos te atendendo! 😊",
+          "redirect": false
+        },
+        {
+          "patterns": [
+            "status",
+            "ativo",
+            "funcionando",
+            "online",
+            "teste",
+            "test"
+          ],
+          "response": "✅ *Sistema Online!*\n\nTudo funcionando perfeitamente.\n\nServidor: Ativo\nBot: Ativo\nIA: Conectada\n\nComo posso ajudar?",
+          "redirect": false
+        }
+      ],
+      "redirects": {
+        "atendimento": {
+          "phone": "5511999991111",
+          "label": "Atendimento"
+        },
+        "financeiro": {
+          "phone": "5511999992222",
+          "label": "Financeiro"
+        },
+        "suporte": {
+          "phone": "5511999993333",
+          "label": "Suporte Tecnico"
+        },
+        "humano": {
+          "phone": "5511999994444",
+          "label": "Atendente"
+        },
+        "reclamacao": {
+          "phone": "5511999995555",
+          "label": "Ouvidoria"
+        }
+      }
+    }
+  ],
+  "s3": {
+    "endpoint": null,
+    "port": 443,
+    "useSSL": true,
+    "accessKey": null,
+    "secretKey": null,
+    "bucket": "zap-media"
+  },
+  "messageQueue": {
+    "rabbitmq": null,
+    "kafka": null,
+    "sqs": null
+  }
+}

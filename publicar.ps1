@@ -121,6 +121,31 @@ foreach ($p in $PastasFixas) {
     if (Test-Path $orig) { Remove-Item (Join-Path $ConteudoDir $p) -Recurse -Force -ErrorAction SilentlyContinue; Copy-Item $orig (Join-Path $ConteudoDir $p) -Recurse -Force }
 }
 
+# ---------------------------------------------------------------- webapi (repo -> pendrive)
+# Os fonte da SoenWebApi vivem no repo (fonte de verdade). Os binários
+# (node, ChromiumPortable, node_modules) existem apenas no pacote completo do
+# pendrive. Este passo sincroniza os fontes corrigidos do repo para o pendrive,
+# preservando os binários — evitando propagação manual arquivo a arquivo.
+$WebApiRepo   = Join-Path $Raiz "SoenWebApi"
+$PendriveWeb  = Join-Path $DistDir "pendrive\SOEN - TORREZIM Pendrive\SoenWebApi"
+if (Test-Path $WebApiRepo -and (Test-Path (Join-Path $PendriveWeb "node\node.exe"))) {
+    Escreve-Linha "Sincronizando SoenWebApi (repo -> pendrive)..."
+    foreach ($dir in @("src", "public", "docs")) {
+        $origDir = Join-Path $WebApiRepo $dir
+        if (Test-Path $origDir) {
+            New-Item -ItemType Directory -Path (Join-Path $PendriveWeb $dir) -Force | Out-Null
+            Copy-Item (Join-Path $origDir "*") (Join-Path $PendriveWeb $dir) -Recurse -Force
+        }
+    }
+    foreach ($f in @("index.js","app.py","swagger.json","README.md","package.json","package-lock.json",".env.example",".dockerignore","docker-compose.yml","Dockerfile","IniciarWebApi.bat","config.json")) {
+        $orig = Join-Path $WebApiRepo $f
+        if (Test-Path $orig) { Copy-Item $orig (Join-Path $PendriveWeb $f) -Force }
+    }
+    Escreve-Linha "SoenWebApi sincronizada (fontes corrigidos)."
+} else {
+    Write-Warning "Pendrive com webapi (node\node.exe) nao encontrado em '$PendriveWeb'; pulando sincronizacao."
+}
+
 # ---------------------------------------------------------------- zip
 $ZipName = "Soen-Torrezim-$Tag.zip"
 $ZipPath = Join-Path $DistDir $ZipName

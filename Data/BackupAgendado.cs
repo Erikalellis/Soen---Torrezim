@@ -116,14 +116,16 @@ namespace Soen___Torrezim.Data
             return arquivo;
         }
 
-        /// <summary>Remove cópias antigas mantendo apenas as <see cref="Reter"/> mais recentes.</summary>
+        /// <summary>Remove cópias antigas (soen_* e preupdate_*) mantendo apenas as <see cref="Reter"/> mais recentes.</summary>
         public static void LimparExcedentes(string dir)
         {
             int retor = Reter;
             if (retor <= 0 || !Directory.Exists(dir)) return;
-            var antigos = Directory.GetFiles(dir, "soen_*.db");
-            Array.Sort(antigos);
-            for (int i = 0; i < antigos.Length - retor; i++)
+            var antigos = new System.Collections.Generic.List<string>();
+            antigos.AddRange(Directory.GetFiles(dir, "soen_*.db"));
+            antigos.AddRange(Directory.GetFiles(dir, "preupdate_*.db"));
+            antigos.Sort();
+            for (int i = 0; i < antigos.Count - retor; i++)
             {
                 try { File.Delete(antigos[i]); } catch (Exception ex) { Logger.LogError(ex); }
             }

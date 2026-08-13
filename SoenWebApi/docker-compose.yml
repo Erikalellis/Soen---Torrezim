@@ -1,0 +1,18 @@
+services:
+  zap-api:
+    build: .
+    container_name: zap-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./media:/app/media
+      - ./sessions:/app/sessions
+      - ./config.json:/app/config.json
+      - ./.env:/app/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    stdin_open: true
+    tty: true

@@ -15,6 +15,15 @@ namespace Soen___Torrezim.Data
         private const int TAMANHO_SAL = 16;
         private const int TAMANHO_HASH = 32;
 
+        /// <summary>Comprimento mínimo aceito para uma senha.</summary>
+        public const int SenhaMinima = 6;
+
+        /// <summary>Valida se a senha atende ao tamanho mínimo exigido.</summary>
+        public static bool SenhaForte(string senha)
+        {
+            return !string.IsNullOrEmpty(senha) && senha.Length >= SenhaMinima;
+        }
+
         /// <summary>Deriva a senha em PBKDF2 com salt aleatório — formato "PBKDF2$iter$salt$hash".</summary>
         public static string Hash(string senha)
         {
@@ -97,8 +106,9 @@ namespace Soen___Torrezim.Data
                 }
                 else
                 {
-                    cmd.CommandText = "INSERT INTO usuarios (usuario, senha, nome, perfil, ativo) VALUES (@usuario, @senha, @nome, @perfil, @ativo)";
+                    cmd.CommandText = "INSERT INTO usuarios (usuario, senha, nome, perfil, ativo, trocar_senha) VALUES (@usuario, @senha, @nome, @perfil, @ativo, @trocar)";
                     cmd.Parameters.AddWithValue("@senha", UsuarioDAO.Hash(u.Senha));
+                    cmd.Parameters.AddWithValue("@trocar", u.TrocarSenha ? 1 : 0);
                 }
                 cmd.Parameters.AddWithValue("@usuario", u.Login ?? "");
                 cmd.Parameters.AddWithValue("@nome", Database.Nulo(u.Nome));
@@ -170,7 +180,8 @@ namespace Soen___Torrezim.Data
                                 Login = LerStr(leitor, "usuario"),
                                 Nome = LerStr(leitor, "nome"),
                                 Perfil = LerStr(leitor, "perfil"),
-                                Ativo = true
+                                Ativo = true,
+                                TrocarSenha = leitor.GetInt32(leitor.GetOrdinal("trocar_senha")) != 0
                             };
                         }
                     }
@@ -189,7 +200,7 @@ namespace Soen___Torrezim.Data
                 long n = (long)cmd.ExecuteScalar();
                 if (n == 0)
                 {
-                    var admin = new Usuario { Login = "admin", Senha = "admin", Nome = "Administrador", Perfil = "admin" };
+                    var admin = new Usuario { Login = "admin", Senha = "admin", Nome = "Administrador", Perfil = "admin", TrocarSenha = true };
                     Salvar(admin);
                 }
             }
@@ -208,13 +219,39 @@ namespace Soen___Torrezim.Data
 
         public static void AtualizarSenha(long id, string senha)
         {
+            if (!SenhaForte(senha)) throw new ArgumentException("A senha deve ter ao menos " + SenhaMinima + " caracteres.");
             using (var conn = Database.AbrirConexao())
             using (var cmd = conn.CreateCommand())
             {
-                cmd.CommandText = "UPDATE usuarios SET senha=@s WHERE id=@id";
+                cmd.CommandText = "UPDATE usuarios SET senha=@s, trocar_senha=0 WHERE id=@id";
                 cmd.Parameters.AddWithValue("@s", Hash(senha));
                 cmd.Parameters.AddWithValue("@id", id);
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>Marca o usuário para precisar trocar a senha no próximo login.</summary>
+        public static void MarcarTrocaSenha(long id)
+        {
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "UPDATE usuarios SET trocar_senha=1 WHERE id=@id";
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>true quando a senha (hash armazenado) usa o formato PBKDF2 atual.</summary>
+        public static bool UsaPbkdf2(long id)
+        {
+            using (var conn = Database.AbrirConexao())
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = "SELECT senha FROM usuarios WHERE id=@id";
+                cmd.Parameters.AddWithValue("@id", id);
+                object r = cmd.ExecuteScalar();
+                return r != null && r.ToString().StartsWith(PREFIXO_PBKDF2);
             }
         }
 

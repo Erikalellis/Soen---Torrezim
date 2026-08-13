@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,6 +76,22 @@ namespace Soen___Torrezim
             var itemTrocar = new ToolStripMenuItem("Trocar Usuário");
             itemTrocar.Click += (s, e) => TrocarUsuario();
             itemConfig.DropDownItems.Add(itemTrocar);
+
+            var itemAlterarSenha = new ToolStripMenuItem("Alterar Minha Senha");
+            itemAlterarSenha.Click += (s, e) =>
+            {
+                if (Sessao.UsuarioAtual == null) return;
+                using (var troca = new TrocarSenha(Sessao.UsuarioAtual))
+                {
+                    if (troca.ShowDialog() == DialogResult.OK)
+                        MessageBox.Show("Senha alterada com sucesso.", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            };
+            itemConfig.DropDownItems.Add(itemAlterarSenha);
+
+            var itemExportarDiagnostico = new ToolStripMenuItem("Exportar Diagnóstico (p/ Suporte)");
+            itemExportarDiagnostico.Click += (s, e) => ExportarDiagnostico();
+            itemConfig.DropDownItems.Add(itemExportarDiagnostico);
 
             itemConfig.DropDownItems.Add(new ToolStripSeparator());
 
@@ -492,7 +510,12 @@ private async void VerificarStatusWebApi()
             _timerBackup.Tick += (s, ev) => BackupAgendado.VerificarAgenda();
             _timerBackup.Start();
 
+            _timerIntegridade = new System.Windows.Forms.Timer { Interval = 21600000 }; // 6h
+            _timerIntegridade.Tick += (s, ev) => VerificarIntegridadePeriodica();
+            _timerIntegridade.Start();
+
             VerificarAtualizacaoAuto();
+            IniciarStatusWhatsApp();
         }
 
         /// <summary>Verifica, em segundo plano, se há nova versão e informa o usuário.</summary>
@@ -537,6 +560,134 @@ private async void VerificarStatusWebApi()
         private void sairmenu_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        // ===== Status Whatsapp/SoenWebApi na barra inferior =====
+        private System.Windows.Forms.Timer _timerStatus2;
+        private ToolStripStatusLabel _lblWhatsApp;
+        private System.Windows.Forms.Timer _timerIntegridade;
+
+        private void IniciarStatusWhatsApp()
+        {
+            try
+            {
+                _lblWhatsApp = new ToolStripStatusLabel("WhatsApp: verificando...") { Spring = false };
+                statusStrip1.Items.Add(_lblWhatsApp);
+                _timerStatus2 = new System.Windows.Forms.Timer { Interval = 15000 };
+                _timerStatus2.Tick += async (s, ev) => await AtualizarStatusWhatsApp();
+                _timerStatus2.Start();
+                _ = AtualizarStatusWhatsApp();
+            }
+            catch (Exception ex) { Logger.LogError(ex); }
+        }
+
+        private async System.Threading.Tasks.Task AtualizarStatusWhatsApp()
+        {
+            if (_lblWhatsApp == null || IsDisposed) return;
+            try
+            {
+                bool online = await SoenWebApiManager.EstahOnlineAsync();
+                if (IsDisposed || _lblWhatsApp.IsDisposed) return;
+                string redutor = online ? "WhatsApp: Online" : "WhatsApp: Offline";
+                if (_lblWhatsApp.Text != redutor)
+                    _lblWhatsApp.Text = redutor + (online ? " (painel: " + SoenWebApiManager.UrlPainel + ")" : " - menu SoenWebApi para iniciar");
+                if (SoenWebApiManager.Localizar() == null)
+                    _lblWhatsApp.Text = "WhatsApp: não instalado";
+            }
+            catch (Exception ex) { Logger.LogError(ex); }
+        }
+
+        /// <summary>
+        /// Exporta um pacote de diagnóstico (log, banco e backup mais recente) em um zip,
+        /// para envio ao suporte. Preserva o anonimato mínimo necessário (sem segredos).
+        /// </summary>
+        private void ExportarDiagnostico()
+        {
+            try
+            {
+                if (!Sessao.EhAdmin)
+                {
+                    MessageBox.Show("Somente administradores podem exportar o diagnóstico.",
+                        "Acesso restrito", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                using (var dlg = new SaveFileDialog())
+                {
+                    dlg.Filter = "ZIP|*.zip";
+                    dlg.FileName = "soen_diagnostico_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".zip";
+                    dlg.Title = "Exportar diagnóstico para o suporte";
+                    if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+                    string destino = dlg.FileName;
+                    File.Delete(destino);
+
+                    using (System.IO.Compression.ZipArchive zip = System.IO.Compression.ZipFile.Open(destino, System.IO.Compression.ZipArchiveMode.Create))
+                    {
+                        // log principal
+                        string logCaminho = Logger.CaminhoLog;
+                        if (File.Exists(logCaminho))
+                            zip.CreateEntryFromFile(logCaminho, "soen.log");
+
+                        // logs rotacionados (últimos)
+                        try
+                        {
+                            var rotacionados = Directory.GetFiles(Path.GetDirectoryName(logCaminho), "soen_*.log");
+                            Array.Sort(rotacionados);
+                            foreach (string r in rotacionados)
+                                zip.CreateEntryFromFile(r, Path.Combine("logs", Path.GetFileName(r)));
+                        }
+                        catch { }
+
+                        // banco atual
+                        if (File.Exists(Database.CaminhoBanco))
+                            zip.CreateEntryFromFile(Database.CaminhoBanco, "soen.db");
+
+                        // backup mais recente
+                        string dirBackup = BackupAgendado.Destino;
+                        if (Directory.Exists(dirBackup))
+                        {
+                            var baks = Directory.GetFiles(dirBackup, "soen_*.db");
+                            Array.Sort(baks);
+                            if (baks.Length > 0)
+                                zip.CreateEntryFromFile(baks[baks.Length - 1], Path.Combine("backups", Path.GetFileName(baks[baks.Length - 1])));
+                        }
+                    }
+
+                    MessageBox.Show(this, "Diagnóstico exportado para:\n" + destino,
+                        "Diagnóstico", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                MessageBox.Show(this, "Falha ao exportar diagnóstico:\n" + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>Verifica periodicamente a integridade do banco (PRAGMA integrity_check).</summary>
+        private void VerificarIntegridadePeriodica()
+        {
+            try
+            {
+                bool ok = Database.BancoIntegro();
+                if (ok) return;
+                if (IsDisposed || !IsHandleCreated) return;
+                var resposta = MessageBox.Show(
+                    "A verificação periódica detectou que o banco de dados (soen.db) pode estar corrompido.\n\n" +
+                    "Deseja restaurar o backup automático mais recente?",
+                    "Banco de dados", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                if (resposta != DialogResult.Yes) return;
+                string restaurado = BackupAgendado.RestaurarUltimo();
+                MessageBox.Show(
+                    restaurado != null
+                        ? "Banco restaurado a partir de:\n" + restaurado
+                        : "Não foi possível restaurar. Verifique a pasta de Backups.",
+                    "Restauração", MessageBoxButtons.OK,
+                    restaurado != null ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+            }
+            catch (Exception ex) { Logger.LogError(ex); }
         }
     }
 }

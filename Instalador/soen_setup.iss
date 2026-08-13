@@ -3,7 +3,7 @@
 ; instalados nem removidos pelo desinstalador — garantindo a preservação dos dados.
 
 #define AppName "SOEN - Sistema de Ordem de Serviço"
-#define AppVersion "1.1.3"
+#define AppVersion "1.1.4"
 #define AppPublisher "SOEN / Erika Lellis"
 
 [Setup]

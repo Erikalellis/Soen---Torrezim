@@ -1,0 +1,58 @@
+name: build-e-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore + build
+        working-directory: Soen - Torrezim
+        run: |
+          dotnet restore "Soen - Torrezim.csproj"
+          dotnet build "Soen - Torrezim.csproj" -c Release --no-restore -nologo
+
+      - name: Empacotar app (zip)
+        shell: pwsh
+        run: |
+          $bin = "Soen - Torrezim\bin\Release"
+          $stg = Join-Path $env:RUNNER_TEMP "app"
+          New-Item -ItemType Directory -Path $stg -Force | Out-Null
+          foreach ($f in @("Soen - Torrezim.exe","Soen - Torrezim.exe.config","System.Data.SQLite.dll","System.Resources.Extensions.dll","System.Buffers.dll","System.Memory.dll","System.Numerics.Vectors.dll","System.Runtime.CompilerServices.Unsafe.dll")) {
+            if (Test-Path (Join-Path $bin $f)) { Copy-Item (Join-Path $bin $f) (Join-Path $stg $f) -Force }
+          }
+          foreach ($p in @("x64","x86")) {
+            if (Test-Path (Join-Path $bin $p)) { Copy-Item (Join-Path $bin $p) (Join-Path $stg $p) -Recurse -Force }
+          }
+          Compress-Archive -Path (Join-Path $stg "*") -DestinationPath "soen-app.zip" -CompressionLevel Optimal
+          Get-Item "soen-app.zip" | Select-Object Name, Length
+
+      - name: Publicar release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $gh = "gh"
+          & $gh release create $tag "soen-app.zip" --repo $env:GITHUB_REPOSITORY --title "Soen - Torrezim $tag" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soen-app
+          path: soen-app.zip

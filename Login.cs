@@ -89,6 +89,20 @@ namespace Soen___Torrezim
                 MessageBox.Show("Usuário ou senha inválidos.", "Acesso negado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            if (u.TrocarSenha)
+            {
+                using (var troca = new TrocarSenha(u, obrigatoria: true))
+                {
+                    if (troca.ShowDialog() != DialogResult.OK)
+                    {
+                        MessageBox.Show("Você precisa definir uma nova senha antes de continuar.", "Atenção",
+                            MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                    u = UsuarioDAO.Autenticar(txtUsuario.Text.Trim(), txtSenha.Text);
+                    if (u == null) return;
+                }
+            }
             UsuarioLogado = u;
             DialogResult = DialogResult.OK;
             Close();

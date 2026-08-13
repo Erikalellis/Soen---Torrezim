@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
+using Soen___Torrezim.Data;
 
 namespace Soen___Torrezim
 {
@@ -152,9 +153,13 @@ namespace Soen___Torrezim
             return script;
         }
 
-        /// <summary>Dispara o script (hidden) e fecha a aplicação para aplicar a atualização.</summary>
+        /// <summary>
+        /// Dispara o script (hidden) e fecha a aplicação para aplicar a atualização.
+        /// Antes, faz um backup pontual do banco (segurança pré-atualização).
+        /// </summary>
         public static void AplicarEEncerrar(string scriptPath)
         {
+            try { BackupPreAtualizacao(); } catch (Exception ex) { Logger.LogError(ex); }
             var psi = new ProcessStartInfo
             {
                 FileName = scriptPath,
@@ -164,6 +169,27 @@ namespace Soen___Torrezim
             };
             Process.Start(psi);
             Application.Exit();
+        }
+
+        /// <summary>
+        /// Backup seguro do banco antes de aplicar a atualização. Usa a API de backup
+        /// do SQLite (consistente), nomeado com prefixo "preupdate_" para facilitar
+        /// identificação, e segue a mesma política de retenção dos backups normais.
+        /// </summary>
+        public static void BackupPreAtualizacao()
+        {
+            if (!System.IO.File.Exists(Database.CaminhoBanco)) return;
+            string dir = BackupAgendado.Destino;
+            Directory.CreateDirectory(dir);
+            string arquivo = System.IO.Path.Combine(dir, "preupdate_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".db");
+            System.Data.SQLite.SQLiteConnection.ClearAllPools();
+            using (var origem = Database.AbrirConexao())
+            using (var destino = new System.Data.SQLite.SQLiteConnection("Data Source=" + arquivo))
+            {
+                destino.Open();
+                origem.BackupDatabase(destino, "main", "main", -1, null, -1);
+            }
+            BackupAgendado.LimparExcedentes(dir);
         }
 
         private static Task BaixarArquivoAsync(Uri url, string destino, IProgress<int> progresso)

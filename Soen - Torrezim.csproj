@@ -246,6 +246,12 @@
     <Compile Include="Login.Designer.cs">
       <DependentUpon>Login.cs</DependentUpon>
     </Compile>
+    <Compile Include="TrocarSenha.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrocarSenha.Designer.cs">
+      <DependentUpon>TrocarSenha.cs</DependentUpon>
+    </Compile>
     <Compile Include="Usuarios.cs">
       <SubType>Form</SubType>
     </Compile>

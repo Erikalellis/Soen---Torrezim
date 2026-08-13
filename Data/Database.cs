@@ -87,6 +87,7 @@ namespace Soen___Torrezim.Data
             AdicionarColunaSeFaltar(conn, "empresa", "logo_path", "TEXT");
             AdicionarColunaSeFaltar(conn, "empresa", "logo_width", "INTEGER DEFAULT 0");
             AdicionarColunaSeFaltar(conn, "empresa", "logo_height", "INTEGER DEFAULT 0");
+            AdicionarColunaSeFaltar(conn, "usuarios", "trocar_senha", "INTEGER DEFAULT 0");
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL injection for security vulnerabilities",
@@ -305,10 +306,11 @@ CREATE TABLE IF NOT EXISTS financeiro (
 CREATE TABLE IF NOT EXISTS usuarios (
     id       INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario  TEXT NOT NULL UNIQUE,
-    senha    TEXT NOT NULL,                -- hash SHA-256
+    senha    TEXT NOT NULL,                -- hash PBKDF2 (antes: SHA-256)
     nome     TEXT,
     perfil   TEXT DEFAULT 'operador',      -- admin | operador
-    ativo    INTEGER DEFAULT 1
+    ativo    INTEGER DEFAULT 1,
+    trocar_senha INTEGER DEFAULT 0         -- obriga troca de senha no proximo login
 );
 
 CREATE TABLE IF NOT EXISTS empresa (

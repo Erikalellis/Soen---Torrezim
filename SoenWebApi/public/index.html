@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDS: ZAP-API - Painel</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--accent:#3b82f6;--accent2:#10b981;--danger:#ef4444;--warn:#f59e0b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sidebar{width:220px;background:var(--card);padding:16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--border)}
+.sidebar h1{font-size:18px;padding:8px 12px;color:var(--accent);margin-bottom:8px}
+.sidebar h1 small{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.sidebar a{padding:10px 12px;text-decoration:none;color:var(--muted);border-radius:8px;font-size:14px;cursor:pointer}
+.sidebar a:hover,.sidebar a.active{background:var(--accent);color:#fff}
+.main{flex:1;padding:24px;overflow-y:auto;max-height:100vh}
+.page{display:none}.page.active{display:block}
+h2{font-size:22px;margin-bottom:20px;color:var(--accent)}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--border)}
+.card h3{font-size:15px;margin-bottom:12px;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.stat{text-align:center;padding:16px}
+.stat .val{font-size:28px;font-weight:700;color:var(--accent)}
+.stat .lbl{font-size:12px;color:var(--muted);margin-top:4px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px;margin-top:10px}
+input,select,textarea{width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px}
+textarea{resize:vertical;min-height:80px;font-family:monospace}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{opacity:.9}
+.btn-s{background:var(--accent2);color:#fff}.btn-s:hover{opacity:.9}
+.btn-d{background:var(--danger);color:#fff}.btn-d:hover{opacity:.9}
+.btn-w{background:var(--warn);color:#000}
+.btn-o{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-o:hover{background:var(--card)}
+pre{background:var(--bg);padding:12px;border-radius:8px;overflow-x:auto;font-size:12px;max-height:300px;overflow-y:auto;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:600}
+.msg-item{padding:10px;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer}
+.msg-item:hover{background:var(--bg)}
+.msg-from{color:var(--accent);font-weight:600}
+.msg-time{float:right;color:var(--muted);font-size:11px}
+.msg-body{margin-top:4px}
+.qr-code{text-align:center;padding:8px}.qr-code img{max-width:300px;border-radius:8px}
+.conv-item{padding:10px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between}
+.conv-item:hover{background:var(--bg)}
+.conv-name{font-weight:600;color:var(--accent)}
+.conv-last{color:var(--muted);font-size:12px;margin-top:2px}
+.conv-count{background:var(--accent);color:#fff;border-radius:12px;padding:2px 8px;font-size:11px}
+.log-line{font-family:monospace;font-size:11px;padding:2px 0;border-bottom:1px solid var(--border)}
+.log-info{color:var(--accent2)}.log-warn{color:var(--warn)}.log-error{color:var(--danger)}.log-debug{color:var(--muted)}
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.tab-bar a{padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--muted)}
+.tab-bar a:hover,.tab-bar a.active{background:var(--card);color:var(--text)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+.badge{padding:2px 8px;border-radius:12px;font-size:11px}
+.badge-green{background:var(--accent2);color:#fff}.badge-red{background:var(--danger);color:#fff}.badge-yellow{background:var(--warn);color:#000}
+#toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s}
+#toast.show{opacity:1}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+@media(max-width:768px){.sidebar{width:60px;padding:8px}.sidebar h1,.sidebar a span{display:none}.main{padding:12px}}
+</style>
+</head>
+<body>
+<nav class="sidebar" id="sidebar">
+  <h1>DDS: ZAP-API<small>Painel v3</small></h1>
+  <a class="active" onclick="go('dashboard')"><span>Dashboard</span></a>
+  <a onclick="go('whatsapp')"><span>WhatsApp</span></a>
+  <a onclick="go('send')"><span>Enviar</span></a>
+  <a onclick="go('messages')"><span>Mensagens</span></a>
+  <a onclick="go('contacts')"><span>Contatos</span></a>
+  <a onclick="go('groups')"><span>Grupos</span></a>
+  <a onclick="go('labels')"><span>Labels</span></a>
+  <a onclick="go('calls')"><span>Chamadas</span></a>
+  <a onclick="go('settings')"><span>Config</span></a>
+  <a onclick="go('ai')"><span>IA</span></a>
+  <a onclick="go('intents')"><span>Intencoes</span></a>
+  <a onclick="go('blacklist')"><span>Blacklist</span></a>
+  <a onclick="go('tools')"><span>Ferramentas</span></a>
+  <a onclick="go('stats')"><span>Estatisticas</span></a>
+  <a onclick="go('log')"><span>Log</span></a>
+</nav>
+<div class="main" id="main"></div>
+<div id="toast"></div>
+<script>
+const API = '';
+let WS = null;
+let TOAST_TIMER = null;
+let REFRESH_INTERVALS = [];
+
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function toast(msg, type='info'){
+  const el=$('toast');
+  el.textContent=msg;
+  el.style.background=type==='error'?'var(--danger)':type==='ok'?'var(--accent2)':'var(--accent)';
+  el.className='show';
+  clearTimeout(TOAST_TIMER);
+  TOAST_TIMER=setTimeout(()=>el.className='',3000);
+}
+
+function api(path, opts={}){
+  const conf=JSON.parse(localStorage.getItem('api_conf')||'{}');
+  const headers={'Content-Type':'application/json'};
+  if(conf.key)headers['x-api-key']=conf.key;
+  if(conf.jwt)headers['Authorization']='Bearer '+conf.jwt;
+  return fetch((API||'')+path,{...opts,headers:{...headers,...opts.headers}}).then(r=>r.json()).catch(e=>({error:e.message}));
+}
+
+function go(page){
+  document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el)el.classList.add('active');
+  const link=Array.from(document.querySelectorAll('.sidebar a')).find(a=>a.getAttribute('onclick')?.includes("'"+page+"'"));
+  if(link)link.classList.add('active');
+  localStorage.setItem('last_page',page);
+  REFRESH_INTERVALS.forEach(clearInterval);
+  REFRESH_INTERVALS=[];
+  if(PAGES[page])PAGES[page]();
+}
+
+const PAGES={};
+
+// === DASHBOARD ===
+PAGES.dashboard=function(){
+  $('main').innerHTML=`
+    <h2>Dashboard</h2>
+    <div class="card">
+      <h3>Controle do Servidor</h3>
+      <div class="flex" style="gap:12px">
+        <button class="btn btn-s" id="btn-server-stop" onclick="stopServer()">⏹ Parar Servidor</button>
+        <button class="btn btn-w" onclick="restartServer()">🔄 Reiniciar Servidor</button>
+        <span id="server-info" style="font-size:13px;color:var(--muted)">Verificando...</span>
+      </div>
+    </div>
+    <div class="grid" id="dash-stats"></div>
+    <div class="card">
+      <h3>Configuracao Rapida</h3>
+      <div class="flex">
+        <button class="btn btn-p" onclick="go('whatsapp')">WhatsApp</button>
+        <button class="btn btn-s" onclick="go('send')">Enviar Mensagem</button>
+        <button class="btn btn-w" onclick="go('settings')">Configuracoes</button>
+        <button class="btn btn-o" onclick="go('stats')">Estatisticas</button>
+      </div>
+    </div>
+  `;
+  refreshDash();
+  refreshServerInfo();
+  REFRESH_INTERVALS.push(setInterval(refreshDash,10000));
+  REFRESH_INTERVALS.push(setInterval(refreshServerInfo,5000));
+};
+
+async function stopServer(){
+  if(!confirm('Tem certeza que deseja PARAR o servidor?'))return;
+  const r=await api('/api/server/stop',{method:'POST'});
+  toast(r.success?'Servidor parando!':r.error,r.success?'ok':'error');
+  if(r.success)document.getElementById('btn-server-stop').textContent='⏹ Parando...';
+}
+
+async function restartServer(){
+  if(!confirm('Tem certeza que deseja REINICIAR o servidor?'))return;
+  const r=await api('/api/server/restart',{method:'POST'});
+  toast(r.success?'Reiniciando...':'Erro: '+r.error,r.success?'ok':'error');
+}
+
+async function refreshServerInfo(){
+  const r=await api('/api/server/status');
+  if(!r||!r.running)return;
+  const el=document.getElementById('server-info');
+  if(el)el.innerHTML='<span class="badge badge-green">Online</span> PID: '+r.pid+' | Uptime: '+r.uptimeFormatted+' | Node: '+r.nodeVersion;
+}
+
+async function refreshDash(){
+  const d=await api('/api/stats');
+  if(!d)return;
+  let html='';
+  html+=statBox('Uptime',d.uptimeFormatted);
+  html+=statBox('Recebidas',d.totals.received);
+  html+=statBox('Enviadas',d.totals.sent);
+  html+=statBox('Midia',d.totals.media);
+  html+=statBox('Modo',d.mode);
+  html+=statBox('IA',d.ai?d.aiProvider:'desligado');
+  html+=statBox('Bot',d.botEnabled?'Ativo':'Inativo');
+  if(d.clients?.length)html+=statBox('Clientes',d.clients.filter(c=>c.connected).length+'/'+d.clients.length);
+  $('dash-stats').innerHTML=html;
+}
+
+function statBox(label,val){return '<div class="card stat"><div class="val">'+val+'</div><div class="lbl">'+label+'</div></div>'}
+
+// === WHATSAPP ===
+PAGES.whatsapp=function(){
+  $('main').innerHTML=`
+    <h2>WhatsApp</h2>
+    <div class="flex" style="margin-bottom:16px">
+      <button class="btn btn-p" onclick="refreshWA()">Atualizar</button>
+    </div>
+    <div id="wa-clients"></div>
+  `;
+  refreshWA();
+};
+
+async function refreshWA(){
+  const d=await api('/status');
+  if(!d)return;
+  let html='';
+  if(!d.clients?.length){html='<div class="card">Nenhum cliente configurado</div>';document.getElementById('wa-clients').innerHTML=html;return}
+  for(const c of d.clients){
+    html+='<div class="card"><h3>'+c.id+'</h3>';
+    html+='<div class="flex" style="margin-bottom:8px">';
+    if(c.ready)html+='<span class="badge badge-green">Conectado</span>';
+    else if(c.qrcode)html+='<span class="badge badge-yellow">QR Code</span>';
+    else html+='<span class="badge badge-red">Desconectado</span>';
+    html+='</div>';
+    if(c.qrcode){html+='<div class="qr-code"><img src="'+c.qrcode+'" alt="QR Code"></div><p style="color:var(--muted);font-size:12px;margin-top:8px">Escaneie o QR Code com o WhatsApp</p>';}
+    if(!c.ready)html+='<button class="btn btn-s" onclick="reconnect(\''+c.id+'\')">Reconectar</button>';
+    html+='</div>';
+  }
+  document.getElementById('wa-clients').innerHTML=html;
+}
+
+async function reconnect(cid){
+  const r=await api('/api/client/'+cid+'/reconnect',{method:'POST'});
+  if(r?.success)toast('Reconectando '+cid,'ok');
+}
+
+// === SEND ===
+PAGES.send=function(){
+  $('main').innerHTML=`
+    <h2>Enviar Mensagem</h2>
+    <div class="tab-bar">
+      <a class="active" onclick="sendTab('text')">Texto</a>
+      <a onclick="sendTab('media')">Midia</a>
+      <a onclick="sendTab('poll')">Enquete</a>
+      <a onclick="sendTab('broadcast')">Broadcast</a>
+      <a onclick="sendTab('react')">Reacao</a>
+      <a onclick="sendTab('location')">Local</a>
+      <a onclick="sendTab('contact')">Contato</a>
+      <a onclick="sendTab('ai')">IA</a>
+    </div>
+    <div id="send-forms"></div>
+  `;
+  sendTab('text');
+};
+
+function sendTab(tab){
+  document.querySelectorAll('.tab-bar a').forEach(a=>a.classList.remove('active'));
+  if(event&&event.target&&event.target.classList)event.target.classList.add('active');
+  else{document.querySelectorAll('.tab-bar a').forEach(a=>{if(a.textContent.trim().toLowerCase().includes(tab))a.classList.add('active')})}
+  const forms={
+    text:'<div class="card"><h3>Enviar Texto</h3><label>Numero</label><input id="st-number"><label>Mensagem</label><textarea id="st-msg"></textarea><button class="btn btn-p" onclick="sendText()">Enviar</button></div>',
+    media:'<div class="card"><h3>Enviar Midia</h3><label>Numero</label><input id="sm-number"><label>URL da midia (ou deixe vazio pra usar arquivo)</label><input id="sm-url"><label>Caption</label><input id="sm-cap"><label>Ou nome do arquivo (upload em Ferramentas)</label><input id="sm-file"><button class="btn btn-p" onclick="sendMedia()">Enviar</button></div>',
+    poll:'<div class="card"><h3>Enviar Enquete</h3><label>Numero</label><input id="sp-number"><label>Pergunta</label><input id="sp-q"><label>Opcoes (separadas por virgula)</label><input id="sp-opts"><button class="btn btn-p" onclick="sendPoll()">Enviar</button></div>',
+    broadcast:'<div class="card"><h3>Broadcast</h3><label>Numeros (separados por virgula)</label><textarea id="sb-nums"></textarea><label>Mensagem</label><textarea id="sb-msg"></textarea><button class="btn btn-p" onclick="sendBroadcast()">Enviar</button></div>',
+    react:'<div class="card"><h3>Reagir</h3><label>Numero</label><input id="sr-number"><label>ID da mensagem</label><input id="sr-id"><label>Emoji</label><input id="sr-emoji" value="👍"><button class="btn btn-p" onclick="sendReact()">Enviar</button></div>',
+    location:'<div class="card"><h3>Enviar Localizacao</h3><label>Numero</label><input id="sl-number"><label>Latitude</label><input id="sl-lat"><label>Longitude</label><input id="sl-lon"><label>Titulo</label><input id="sl-title"><button class="btn btn-p" onclick="sendLocation()">Enviar</button></div>',
+    contact:'<div class="card"><h3>Enviar Contato</h3><label>Numero destino</label><input id="sc-number"><label>Contatos (formato: Nome:5511999999999 separados por nova linha)</label><textarea id="sc-contacts"></textarea><button class="btn btn-p" onclick="sendContact()">Enviar</button></div>',
+    ai:'<div class="card"><h3>Enviar com IA</h3><label>Numero</label><input id="sa-number"><label>Prompt</label><textarea id="sa-prompt"></textarea><button class="btn btn-p" onclick="sendAI()">Enviar</button></div>'
+  };
+  document.getElementById('send-forms').innerHTML=forms[tab];
+}
+
+async function sendText(){const r=await api('/api/send/text',{method:'POST',body:JSON.stringify({number:document.getElementById('st-number').value,message:document.getElementById('st-msg').value})});toast(r.success?'Enviado!':r.error,r.success?'ok':'error')}
+async function sendMedia(){const r=await api('/api/send/media',{method:'POST',body:JSON.stringify({number:document.getElementById('sm-number').value,url:document.getElementById('sm-url').value||undefined,fileName:document.getElementById('sm-file').value||undefined,caption:document.getElementById('sm-cap').value})});toast(r.success?'Enviado!':r.error,r.success?'ok':'error')}
+async function sendPoll(){const opts=document.getElementById('sp-opts').value.split(',').map(s=>s.trim()).filter(Boolean);const r=await api('/api/send/poll',{method:'POST',body:JSON.stringify({number:document.getElementById('sp-number').value,question:document.getElementById('sp-q').value,options:opts})});toast(r.success?'Enviado!':r.error,r.success?'ok':'error')}
+async function sendBroadcast(){const nums=document.getElementById('sb-nums').value.split(',').map(s=>s.trim());const r=await api('/api/send/broadcast',{method:'POST',body:JSON.stringify({numbers:nums,message:document.getElementById('sb-msg').value})});toast(r.success?'Enviado ('+r.sent+'/'+(r.sent+r.failed)+')!':r.error,r.success?'ok':'error');if(r.results)console.log(r.results)}
+async function sendReact(){const r=await api('/api/react',{method:'POST',body:JSON.stringify({number:document.getElementById('sr-number').value,messageId:document.getElementById('sr-id').value,emoji:document.getElementById('sr-emoji').value})});toast(r.success?'Reagido!':r.error,r.success?'ok':'error')}
+async function sendLocation(){const r=await api('/api/send/location',{method:'POST',body:JSON.stringify({number:document.getElementById('sl-number').value,latitude:document.getElementById('sl-lat').value,longitude:document.getElementById('sl-lon').value,title:document.getElementById('sl-title').value})});toast(r.success?'Enviado!':r.error,r.success?'ok':'error')}
+async function sendContact(){const lines=document.getElementById('sc-contacts').value.split('\n').filter(Boolean);const contacts=lines.map(l=>{const p=l.split(':');return{name:p[0],number:p[1]||p[0]}});const r=await api('/api/send/contact',{method:'POST',body:JSON.stringify({number:document.getElementById('sc-number').value,contacts})});toast(r.success?'Enviado!':r.error,r.success?'ok':'error')}
+async function sendAI(){const r=await api('/api/send/ai',{method:'POST',body:JSON.stringify({number:document.getElementById('sa-number').value,prompt:document.getElementById('sa-prompt').value})});toast(r.success?'Enviado!':r.error,r.success?'ok':'error')}
+
+// === MESSAGES ===
+PAGES.messages=function(){
+  $('main').innerHTML=`
+    <h2>Mensagens</h2>
+    <div class="flex" style="margin-bottom:8px">
+      <button class="btn btn-s btn-sm" onclick="exportChat('json')">Exportar JSON</button>
+      <button class="btn btn-s btn-sm" onclick="exportChat('csv')">Exportar CSV</button>
+    </div>
+    <div class="tab-bar">
+      <a class="active" onclick="msgTab('conversas')">Conversas</a>
+      <a onclick="msgTab('all')">Todas</a>
+    </div>
+    <div id="msg-content"></div>
+  `;
+  msgTab('conversas');
+};
+
+function msgTab(tab){
+  document.querySelectorAll('.tab-bar a').forEach(a=>a.classList.remove('active'));
+  if(event&&event.target&&event.target.classList)event.target.classList.add('active');
+  else{document.querySelectorAll('.tab-bar a').forEach(a=>{if(a.textContent.trim().toLowerCase().includes(tab))a.classList.add('active')})}
+  if(tab==='conversas'){document.getElementById('msg-content').innerHTML='<div class="loading">Carregando...</div>';loadConversas()}
+  else loadAllMsgs();
+}
+
+async function loadConversas(){
+  const d=await api('/api/conversations');
+  if(!d)return;
+  let html='<div class="card" id="conv-list">';
+  for(const c of d.conversations||[]){
+    html+='<div class="conv-item" onclick="showConversa(\''+esc(c.number)+'\')"><div><div class="conv-name">'+esc(c.number)+'</div><div class="conv-last">'+esc(c.lastMsg?.substring(0,50)||'(vazio)')+'</div></div><span class="conv-count">'+esc(c.count)+'</span></div>';
+  }
+  html+='</div><div id="conv-detail"></div>';
+  document.getElementById('msg-content').innerHTML=html;
+}
+
+async function showConversa(num){
+  const d=await api('/api/messages?from='+num+'&limit=200');
+  if(!d)return;
+  let html='<div class="card"><h3>Conversa com '+esc(num)+'</h3><button class="btn btn-o" onclick="loadConversas()">Voltar</button></div>';
+  for(const m of (d.messages||[]).reverse()){
+    html+='<div class="msg-item"><span class="msg-from">'+esc(m.from_number||'')+'</span><span class="msg-time">'+new Date(m.timestamp*1000).toLocaleString()+'</span><div class="msg-body">'+esc(m.body||'(midia)')+'</div></div>';
+  }
+  document.getElementById('conv-detail').innerHTML=html;
+}
+
+async function loadAllMsgs(){
+  const d=await api('/api/messages?limit=200');
+  if(!d)return;
+  let html='<div class="card"><h3>Ultimas mensagens</h3><pre>'+JSON.stringify(d.messages||[],null,2)+'</pre></div>';
+  document.getElementById('msg-content').innerHTML=html;
+}
+
+async function exportChat(format){
+  const cid=prompt('Client ID (deixe vazio para todos):')||'all';
+  window.open('/api/export/'+encodeURIComponent(cid)+'?format='+format+(localStorage.getItem('api_conf')?'&token='+encodeURIComponent(JSON.parse(localStorage.getItem('api_conf')).key||''):''));
+}
+
+// === CONTACTS ===
+PAGES.contacts=function(){
+  $('main').innerHTML=`<h2>Contatos</h2><div class="flex" style="margin-bottom:16px"><button class="btn btn-p" onclick="loadContacts()">Atualizar</button></div><div id="contacts-list"></div>`;
+  loadContacts();
+};
+
+async function loadContacts(){
+  const d=await api('/api/contacts');
+  if(!d)return;
+  if(d.error){document.getElementById('contacts-list').innerHTML='<div class="card" style="color:var(--warn)">'+d.error+'</div>';return}
+  let html='<div class="card"><table><tr><th>Numero</th><th>Nome</th><th>Acoes</th></tr>';
+  for(const c of d.contacts||[]){
+    html+='<tr><td>'+esc(c.number)+'</td><td>'+esc(c.name||c.pushname||'-')+'</td><td><button class="btn btn-s btn-sm" onclick="blockContact(\''+esc(c.number)+'\')">Bloquear</button></td></tr>';
+  }
+  html+='</table></div>';
+  document.getElementById('contacts-list').innerHTML=html;
+}
+
+async function blockContact(num){
+  const r=await api('/api/contacts/block',{method:'POST',body:JSON.stringify({number:num})});
+  toast(r.success?'Bloqueado!':r.error,r.success?'ok':'error');
+}
+
+// === GROUPS ===
+PAGES.groups=function(){
+  $('main').innerHTML=`<h2>Grupos</h2><div class="flex" style="margin-bottom:16px"><button class="btn btn-p" onclick="loadGroups()">Atualizar</button><button class="btn btn-s" onclick="showCreateGroup()">Criar Grupo</button></div><div id="groups-list"></div>`;
+  loadGroups();
+};
+
+async function loadGroups(){
+  const d=await api('/api/groups');
+  if(!d)return;
+  if(d.error){document.getElementById('groups-list').innerHTML='<div class="card" style="color:var(--warn)">'+d.error+'</div>';return}
+  let html='<div class="card"><table><tr><th>Nome</th><th>ID</th><th>Participantes</th><th>Acoes</th></tr>';
+  for(const g of d.groups||[]){
+    html+='<tr><td>'+esc(g.name)+'</td><td style="font-size:11px">'+esc(g.id)+'</td><td>'+esc(g.participants)+'</td><td><button class="btn btn-s btn-sm" onclick="groupDetail(\''+esc(g.id)+'\')">Detalhes</button></td></tr>';
+  }
+  html+='</table></div><div id="group-detail"></div>';
+  document.getElementById('groups-list').innerHTML=html;
+}
+
+function showCreateGroup(){
+  document.getElementById('groups-list').innerHTML+=`
+    <div class="card"><h3>Criar Grupo</h3>
+    <label>Nome</label><input id="cg-name">
+    <label>Participantes (separados por virgula)</label><input id="cg-parts">
+    <button class="btn btn-s" onclick="createGroup()">Criar</button></div>`;
+}
+
+async function createGroup(){
+  const parts=document.getElementById('cg-parts').value.split(',').map(s=>s.trim());
+  const r=await api('/api/groups/create',{method:'POST',body:JSON.stringify({name:document.getElementById('cg-name').value,participants:parts})});
+  toast(r.success?'Grupo criado!':r.error,r.success?'ok':'error');
+  if(r.success)loadGroups();
+}
+
+async function groupDetail(id){
+  const d=await api('/api/groups/'+id);
+  if(!d)return;
+  let html='<div class="card"><h3>'+esc(d.name)+'</h3><button class="btn btn-o" onclick="loadGroups()">Voltar</button>';
+  html+='<p><b>ID:</b> '+esc(d.id)+'</p><p><b>Descricao:</b> '+esc(d.description||'-')+'</p><p><b>Participantes:</b> '+esc(d.participants?.length||0)+'</p>';
+  html+='<div style="margin-top:12px">';
+  html+='<button class="btn btn-s" onclick="addToGroup(\''+d.id+'\')">Adicionar</button> ';
+  html+='<button class="btn btn-d" onclick="removeFromGroup(\''+d.id+'\')">Remover</button> ';
+  html+='<button class="btn btn-w" onclick="leaveGroup(\''+d.id+'\')">Sair</button>';
+  html+='</div></div>';
+  document.getElementById('group-detail').innerHTML=html;
+}
+
+async function addToGroup(id){const num=prompt('Numero:');if(!num)return;const r=await api('/api/groups/add',{method:'POST',body:JSON.stringify({groupId:id,number:num})});toast(r.success?'Adicionado!':r.error,r.success?'ok':'error')}
+async function removeFromGroup(id){const num=prompt('Numero:');if(!num)return;const r=await api('/api/groups/remove',{method:'POST',body:JSON.stringify({groupId:id,number:num})});toast(r.success?'Removido!':r.error,r.success?'ok':'error')}
+async function leaveGroup(id){if(!confirm('Sair do grupo?'))return;const r=await api('/api/groups/leave',{method:'POST',body:JSON.stringify({groupId:id})});toast(r.success?'Saiu!':r.error,r.success?'ok':'error')}
+
+// === LABELS ===
+PAGES.labels=function(){
+  $('main').innerHTML=`<h2>Labels</h2><div class="flex" style="margin-bottom:16px"><button class="btn btn-p" onclick="loadLabels()">Atualizar</button><button class="btn btn-s" onclick="showAddLabel()">Nova Label</button></div><div id="labels-list"></div>`;
+  loadLabels();
+};
+
+async function loadLabels(){
+  const d=await api('/api/labels');
+  if(!d)return;
+  let html='';
+  for(const l of d.labels||[]){
+    html+='<div class="card" style="border-left:4px solid '+esc(l.color||'#3b82f6')+'"><h3>'+esc(l.name)+'</h3><p style="font-size:12px;color:var(--muted)">Associacoes: '+esc(l.associations?.length||0)+'</p><button class="btn btn-d btn-sm" onclick="deleteLabel(\''+esc(l.id)+'\')">Excluir</button></div>';
+  }
+  if(!html)html='<div class="card">Nenhuma label</div>';
+  document.getElementById('labels-list').innerHTML=html;
+}
+
+function showAddLabel(){document.getElementById('labels-list').innerHTML='<div class="card"><label>Nome</label><input id="nl-name"><label>Cor</label><input id="nl-color" type="color" value="#3b82f6"><button class="btn btn-s" onclick="addLabel()">Salvar</button></div>'+document.getElementById('labels-list').innerHTML}
+
+async function addLabel(){
+  const r=await api('/api/labels',{method:'POST',body:JSON.stringify({name:document.getElementById('nl-name').value,color:document.getElementById('nl-color').value})});
+  toast(r.success?'Label criada!':r.error,r.success?'ok':'error');
+  if(r.success)loadLabels();
+}
+
+async function deleteLabel(id){if(!confirm('Excluir label?'))return;const r=await api('/api/labels/'+id,{method:'DELETE'});toast(r.success?'Excluida!':r.error,r.success?'ok':'error');loadLabels()}
+
+// === CALLS ===
+PAGES.calls=function(){
+  $('main').innerHTML=`<h2>Chamadas</h2><div class="flex" style="margin-bottom:16px"><button class="btn btn-p" onclick="loadCalls()">Atualizar</button></div><div id="calls-list"></div>`;
+  loadCalls();
+};
+
+async function loadCalls(){
+  const d=await api('/api/calls');
+  if(!d)return;
+  let html='<div class="card"><table><tr><th>De</th><th>Status</th><th>Data</th></tr>';
+  for(const c of d.calls||[]){
+    html+='<tr><td>'+c.from_number+'</td><td><span class="badge '+(c.status==='received'?'badge-yellow':'badge-red')+'">'+c.status+'</span></td><td>'+new Date(c.timestamp).toLocaleString()+'</td></tr>';
+  }
+  html+='</table></div>';
+  document.getElementById('calls-list').innerHTML=html;
+}
+
+// === SETTINGS ===
+PAGES.settings=function(){
+  $('main').innerHTML=`
+    <h2>Configuracoes</h2>
+    <div class="tab-bar">
+      <a class="active" onclick="settingsTab('geral')">Geral</a>
+      <a onclick="settingsTab('webhook')">Webhook</a>
+      <a onclick="settingsTab('proxy')">Proxy</a>
+      <a onclick="settingsTab('mq')">Message Queue</a>
+      <a onclick="settingsTab('s3')">S3/MinIO</a>
+    </div>
+    <div id="settings-content"></div>
+  `;
+  settingsTab('geral');
+};
+
+function settingsTab(tab){
+  document.querySelectorAll('.tab-bar a').forEach(a=>a.classList.remove('active'));
+  if(event&&event.target&&event.target.classList)event.target.classList.add('active');
+  else{document.querySelectorAll('.tab-bar a').forEach(a=>{if(a.textContent.trim().toLowerCase().includes(tab))a.classList.add('active')})}
+  const tabs={
+    geral:'<div class="card"><h3>Geral</h3><label>Modo</label><select id="cfg-mode"><option value="single">Single</option><option value="central">Central</option><option value="multi">Multi</option></select><label>Bot Ativo</label><select id="cfg-bot"><option value="true">Sim</option><option value="false">Nao</option></select><label>Nome do Bot</label><input id="cfg-botname"><label>Numero Controlador (opcional)</label><input id="cfg-ctrl"><label>Horas Reset Humano</label><input id="cfg-human" type="number"><button class="btn btn-p" onclick="saveSettings()">Salvar</button></div><div class="card"><h3>Ferias</h3><label>Ativar modo ferias</label><select id="cfg-vacation"><option value="false">Nao</option><option value="true">Sim</option></select><label>Mensagem de ferias</label><textarea id="cfg-vacmsg"></textarea><button class="btn btn-p" onclick="saveVacation()">Salvar</button></div>',
+    webhook:'<div class="card"><h3>Webhook Principal</h3><label>URL do Webhook</label><input id="cfg-wh-url"><label>Segredo (HMAC)</label><input id="cfg-wh-secret"><button class="btn btn-p" onclick="saveWebhook()">Salvar</button><button class="btn btn-d" onclick="deleteWebhook()">Remover</button></div><div class="card"><h3>Multi-Webhook</h3><p style="font-size:12px;color:var(--muted);margin-bottom:8px">Adicione URLs adicionais com filtro por evento.</p><label>URL</label><input id="mw-url"><label>Segredo</label><input id="mw-secret"><label>Eventos (separados por virgula, vazio = todos)</label><input id="mw-events"><button class="btn btn-s" onclick="addMultiWebhook()">Adicionar</button><div id="mw-list" style="margin-top:8px"></div></div><div class="card"><h3>Eventos do Webhook</h3><div id="wh-events"></div></div>',
+    proxy:'<div class="card"><h3>Proxy Global</h3><label>Proxy (ex: http://user:pass@host:port)</label><input id="cfg-proxy"><button class="btn btn-p" onclick="saveProxy()">Salvar</button></div>',
+    mq:'<div class="card"><h3>Message Queue</h3><label>RabbitMQ URL</label><input id="cfg-mq-rabbit"><label>Kafka Brokers</label><input id="cfg-mq-kafka"><label>SQS Queue URL</label><input id="cfg-mq-sqs"><label>SQS Region</label><input id="cfg-mq-region" value="us-east-1"><button class="btn btn-p" onclick="saveMQ()">Salvar</button></div>',
+    s3:'<div class="card"><h3>S3/MinIO</h3><label>Endpoint</label><input id="cfg-s3-ep"><label>Porta</label><input id="cfg-s3-port" value="443"><label>Access Key</label><input id="cfg-s3-ak"><label>Secret Key</label><input id="cfg-s3-sk"><label>Bucket</label><input id="cfg-s3-bucket" value="zap-media"><label>Usar SSL</label><select id="cfg-s3-ssl"><option value="true">Sim</option><option value="false">Nao</option></select><button class="btn btn-p" onclick="saveS3()">Salvar</button></div>'
+  };
+  document.getElementById('settings-content').innerHTML=tabs[tab];
+  if(tab==='geral')loadSettings();
+  if(tab==='webhook'){loadWebhook();loadWebhookEvents();loadMultiWebhooks()}
+  if(tab==='proxy')loadProxy();
+  if(tab==='mq')loadMQ();
+  if(tab==='s3')loadS3();
+}
+
+async function loadSettings(){
+  const d=await api('/api/config');
+  if(!d)return;
+  document.getElementById('cfg-mode').value=d.mode||'single';
+  document.getElementById('cfg-bot').value=d.botEnabled?'true':'false';
+  document.getElementById('cfg-botname').value=d.botName||'';
+  document.getElementById('cfg-ctrl').value=d.controllerNumber||'';
+  document.getElementById('cfg-human').value=d.humanResetHours||24;
+  document.getElementById('cfg-vacation').value=d.vacationMode?'true':'false';
+  document.getElementById('cfg-vacmsg').value=d.vacationMessage||'';
+}
+
+async function saveSettings(){
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify({
+    mode:document.getElementById('cfg-mode').value,
+    botEnabled:document.getElementById('cfg-bot').value==='true',
+    botName:document.getElementById('cfg-botname').value,
+    controllerNumber:document.getElementById('cfg-ctrl').value,
+    humanResetHours:parseInt(document.getElementById('cfg-human').value)||24
+  })});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+async function saveVacation(){
+  const r=await api('/api/vacation',{method:'POST',body:JSON.stringify({
+    enabled:document.getElementById('cfg-vacation').value==='true',
+    message:document.getElementById('cfg-vacmsg').value
+  })});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+async function loadWebhook(){
+  const d=await api('/api/config/webhook');
+  if(!d)return;
+  document.getElementById('cfg-wh-url').value=d.webhook||'';
+}
+
+async function saveWebhook(){
+  const r=await api('/api/config/webhook',{method:'POST',body:JSON.stringify({
+    url:document.getElementById('cfg-wh-url').value,
+    secret:document.getElementById('cfg-wh-secret').value||undefined
+  })});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+async function deleteWebhook(){const r=await api('/api/config/webhook',{method:'DELETE'});toast(r.success?'Removido!':r.error,r.success?'ok':'error')}
+
+async function loadMultiWebhooks(){
+  const d=await api('/api/config');
+  if(!d)return;
+  const whs=Array.isArray(d.webhooks)?d.webhooks:[];
+  let html='';
+  for(let i=0;i<whs.length;i++){
+    html+='<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">';
+    html+=esc(whs[i].url)+' <span style="color:var(--muted)">'+(whs[i].events?.length?'('+whs[i].events.join(', ')+')':'todos')+'</span> ';
+    html+='<button class="btn btn-d btn-sm" onclick="removeMultiWebhook('+i+')">X</button></div>';
+  }
+  document.getElementById('mw-list').innerHTML=html||'<span style="font-size:13px;color:var(--muted)">Nenhum webhook adicional</span>';
+}
+
+async function addMultiWebhook(){
+  const d=await api('/api/config');
+  if(!d)return;
+  if(!Array.isArray(d.webhooks))d.webhooks=[];
+  const url=document.getElementById('mw-url').value;
+  if(!url)return toast('URL obrigatoria','error');
+  const secret=document.getElementById('mw-secret').value;
+  const events=document.getElementById('mw-events').value.split(',').map(s=>s.trim()).filter(Boolean);
+  d.webhooks.push({url,secret:secret||undefined,events:events.length?events:undefined});
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify(d)});
+  toast(r.success?'Adicionado!':r.error,r.success?'ok':'error');
+  if(r.success){document.getElementById('mw-url').value='';document.getElementById('mw-secret').value='';document.getElementById('mw-events').value='';loadMultiWebhooks()}
+}
+
+async function removeMultiWebhook(idx){
+  const d=await api('/api/config');
+  if(!d)return;
+  if(!Array.isArray(d.webhooks))return;
+  d.webhooks.splice(idx,1);
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify(d)});
+  toast(r.success?'Removido!':r.error,r.success?'ok':'error');
+  if(r.success)loadMultiWebhooks();
+}
+
+async function loadWebhookEvents(){
+  const d=await api('/api/webhook/events');
+  if(!d)return;
+  let html='<div class="flex" style="margin-bottom:8px"><button class="btn btn-s btn-sm" onclick="loadWebhookFailed()">Falhos</button><button class="btn btn-o btn-sm" onclick="loadWebhookEvents()">Todos</button></div>';
+  html+='<table><tr><th>Evento</th><th>Status</th><th>Data</th><th>Acao</th></tr>';
+  for(const e of (d.events||[]).slice(0,30)){
+    const badge=e.status==='sent'?'badge-green':e.status==='failed'?'badge-red':'badge-yellow';
+    html+='<tr><td>'+esc(e.event)+'</td><td><span class="badge '+badge+'">'+esc(e.status)+'</span></td><td>'+new Date(e.created_at).toLocaleString()+'</td><td>'+(e.status==='failed'?'<button class="btn btn-w btn-sm" onclick="replayWebhook(\''+e.id+'\')">Reenviar</button>':'')+'</td></tr>';
+  }
+  html+='</table>';
+  document.getElementById('wh-events').innerHTML=html;
+}
+
+async function loadWebhookFailed(){
+  const d=await api('/api/webhook/events?failed=true');
+  if(!d)return;
+  let html='<div class="flex" style="margin-bottom:8px"><button class="btn btn-w btn-sm" onclick="loadWebhookFailed()">Falhos</button><button class="btn btn-o btn-sm" onclick="loadWebhookEvents()">Todos</button></div>';
+  html+='<table><tr><th>Evento</th><th>Status</th><th>Data</th><th>Acao</th></tr>';
+  for(const e of (d.events||[]).slice(0,30)){
+    html+='<tr><td>'+esc(e.event)+'</td><td><span class="badge badge-red">'+esc(e.status)+'</span></td><td>'+new Date(e.created_at).toLocaleString()+'</td><td><button class="btn btn-w btn-sm" onclick="replayWebhook(\''+e.id+'\')">Reenviar</button></td></tr>';
+  }
+  html+='</table>';
+  document.getElementById('wh-events').innerHTML=html;
+}
+
+async function replayWebhook(id){
+  const r=await api('/api/webhook/events/'+id+'/replay',{method:'POST'});
+  toast(r.success?'Reenviado!':'Falhou: '+(r.error||'erro'),r.success?'ok':'error');
+  loadWebhookFailed();
+}
+
+async function loadProxy(){
+  const d=await api('/api/config/proxy');
+  if(!d)return;
+  document.getElementById('cfg-proxy').value=d.proxy||'';
+}
+
+async function saveProxy(){
+  const r=await api('/api/config/proxy',{method:'PUT',body:JSON.stringify({proxy:document.getElementById('cfg-proxy').value||null})});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+async function loadMQ(){
+  const d=await api('/api/config/mq');
+  if(!d)return;
+}
+
+async function saveMQ(){
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify({
+    messageQueue:{
+      rabbitmq:document.getElementById('cfg-mq-rabbit').value||null,
+      kafka:{brokers:(document.getElementById('cfg-mq-kafka').value||'').split(','),topic:'zap-events'},
+      sqs:{queueUrl:document.getElementById('cfg-mq-sqs').value||null,region:document.getElementById('cfg-mq-region').value||'us-east-1'}
+    }
+  })});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+async function loadS3(){
+  const d=await api('/api/config');
+  if(!d||!d.s3)return;
+  document.getElementById('cfg-s3-ep').value=d.s3.endpoint||'';
+  document.getElementById('cfg-s3-port').value=d.s3.port||443;
+  document.getElementById('cfg-s3-ak').value=d.s3.accessKey||'';
+  document.getElementById('cfg-s3-sk').value=d.s3.secretKey||'';
+  document.getElementById('cfg-s3-bucket').value=d.s3.bucket||'zap-media';
+  document.getElementById('cfg-s3-ssl').value=d.s3.useSSL?'true':'false';
+}
+
+async function saveS3(){
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify({
+    s3:{
+      endpoint:document.getElementById('cfg-s3-ep').value||null,
+      port:parseInt(document.getElementById('cfg-s3-port').value)||443,
+      accessKey:document.getElementById('cfg-s3-ak').value||null,
+      secretKey:document.getElementById('cfg-s3-sk').value||null,
+      bucket:document.getElementById('cfg-s3-bucket').value||'zap-media',
+      useSSL:document.getElementById('cfg-s3-ssl').value==='true'
+    }
+  })});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+// === AI ===
+PAGES.ai=function(){
+  $('main').innerHTML=`
+    <h2>Inteligencia Artificial</h2>
+    <div class="card">
+      <label>Provedor</label>
+      <select id="ai-provider"><option value="openai">OpenAI</option><option value="ollama">Ollama</option></select>
+      <label>OpenAI API Key</label><input id="ai-key" type="password">
+      <label>OpenAI Model</label><input id="ai-model" value="gpt-4o-mini">
+      <label>Ollama URL</label><input id="ai-ollama-url" value="http://localhost:11434">
+      <label>Ollama Model</label><input id="ai-ollama-model" value="llama3">
+      <button class="btn btn-p" onclick="saveAI()">Salvar</button>
+      <button class="btn btn-s" onclick="testAI()">Testar Conexao</button>
+    </div>
+  `;
+  loadAI();
+};
+
+async function loadAI(){
+  const d=await api('/api/config/ai');
+  if(!d)return;
+  document.getElementById('ai-provider').value=d.aiProvider||'openai';
+  document.getElementById('ai-key').value=d.hasOpenAI?'***':'';
+  document.getElementById('ai-model').value=d.openaiModel||'gpt-4o-mini';
+  document.getElementById('ai-ollama-url').value=d.ollamaUrl||'http://localhost:11434';
+  document.getElementById('ai-ollama-model').value=d.ollamaModel||'llama3';
+}
+
+async function saveAI(){
+  const r=await api('/api/config/ai',{method:'PUT',body:JSON.stringify({
+    aiProvider:document.getElementById('ai-provider').value,
+    openaiKey:document.getElementById('ai-key').value==='***'?undefined:document.getElementById('ai-key').value,
+    openaiModel:document.getElementById('ai-model').value,
+    ollamaUrl:document.getElementById('ai-ollama-url').value,
+    ollamaModel:document.getElementById('ai-ollama-model').value,
+  })});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+}
+
+async function testAI(){toast('Teste via console (POST /api/send/ai)')}
+
+// === INTENTS ===
+PAGES.intents=function(){
+  $('main').innerHTML=`
+    <h2>Intencoes</h2>
+    <button class="btn btn-s" onclick="addIntent()" style="margin-bottom:12px">Nova Intencao</button>
+    <div id="intents-list"></div>
+  `;
+  loadIntents();
+};
+
+async function loadIntents(){
+  const d=await api('/api/config');
+  if(!d)return;
+  const intents=d.clients?.[0]?.intents||[];
+  let html='';
+  for(let i=0;i<intents.length;i++){
+    const it=intents[i];
+    html+='<div class="card"><h3>'+esc(it.response?.substring(0,40)||'Intencao '+(i+1))+'</h3>';
+    html+='<p style="font-size:12px;color:var(--muted)">Padroes: '+esc((it.patterns||[]).join(', '))+'</p>';
+    html+='<button class="btn btn-w" onclick="editIntent('+i+')">Editar</button> ';
+    html+='<button class="btn btn-d" onclick="deleteIntent('+i+')">Excluir</button></div>';
+  }
+  if(!html)html='<div class="card">Nenhuma intencao configurada</div>';
+  document.getElementById('intents-list').innerHTML=html;
+}
+
+function addIntent(){
+  const idx=prompt('Indice (0 para inicio):');
+  if(idx===null)return;
+  document.getElementById('intents-list').innerHTML=`
+    <div class="card"><h3>Nova Intencao</h3>
+    <label>Palavras-chave (separadas por virgula)</label><input id="ni-patterns">
+    <label>Resposta</label><textarea id="ni-response"></textarea>
+    <label>Redirecionar?</label><select id="ni-redirect"><option value="false">Nao</option><option value="true">Sim</option></select>
+    <button class="btn btn-s" onclick="saveNewIntent(${idx})">Salvar</button>
+    <button class="btn btn-o" onclick="loadIntents()">Cancelar</button></div>
+  `+document.getElementById('intents-list').innerHTML;
+}
+
+async function saveNewIntent(idx){
+  const d=await api('/api/config');
+  if(!d)return;
+  if(!d.clients[0].intents)d.clients[0].intents=[];
+  const intent={patterns:document.getElementById('ni-patterns').value.split(',').map(s=>s.trim()).filter(Boolean),response:document.getElementById('ni-response').value,redirect:document.getElementById('ni-redirect').value==='true'};
+  d.clients[0].intents.splice(parseInt(idx),0,intent);
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify(d)});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+  if(r.success)loadIntents();
+}
+
+function editIntent(idx){
+  api('/api/config').then(d=>{
+    if(!d)return;
+    const it=d.clients[0].intents[idx];
+    document.getElementById('intents-list').innerHTML=`
+      <div class="card"><h3>Editar Intencao</h3>
+      <label>Palavras-chave</label><input id="ei-patterns" value="${(it.patterns||[]).join(',')}">
+      <label>Resposta</label><textarea id="ei-response">${it.response||''}</textarea>
+      <label>Redirecionar?</label><select id="ei-redirect"><option value="false" ${it.redirect?'':'selected'}>Nao</option><option value="true" ${it.redirect?'selected':''}>Sim</option></select>
+      <button class="btn btn-s" onclick="updateIntent(${idx})">Salvar</button>
+      <button class="btn btn-o" onclick="loadIntents()">Cancelar</button></div>
+    `+document.getElementById('intents-list').innerHTML;
+  });
+}
+
+async function updateIntent(idx){
+  const d=await api('/api/config');
+  if(!d)return;
+  d.clients[0].intents[idx]={patterns:document.getElementById('ei-patterns').value.split(',').map(s=>s.trim()).filter(Boolean),response:document.getElementById('ei-response').value,redirect:document.getElementById('ei-redirect').value==='true'};
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify(d)});
+  toast(r.success?'Salvo!':r.error,r.success?'ok':'error');
+  if(r.success)loadIntents();
+}
+
+async function deleteIntent(idx){
+  if(!confirm('Excluir intencao?'))return;
+  const d=await api('/api/config');
+  if(!d)return;
+  d.clients[0].intents.splice(idx,1);
+  const r=await api('/api/config',{method:'PUT',body:JSON.stringify(d)});
+  toast(r.success?'Excluida!':r.error,r.success?'ok':'error');
+  if(r.success)loadIntents();
+}
+
+// === BLACKLIST ===
+PAGES.blacklist=function(){
+  $('main').innerHTML=`<h2>Blacklist</h2><div class="flex" style="margin-bottom:16px"><button class="btn btn-p" onclick="loadBlacklist()">Atualizar</button></div><div class="card"><label>Numero</label><input id="bl-number"><button class="btn btn-d" onclick="addBlacklist()">Bloquear</button></div><div id="blacklist-list"></div>`;
+  loadBlacklist();
+};
+
+async function loadBlacklist(){
+  const d=await api('/api/blacklist');
+  if(!d)return;
+  let html='<div class="card"><table><tr><th>Numero</th><th>Acao</th></tr>';
+  const list=Array.isArray(d.blacklist)?d.blacklist:Object.values(d.blacklist||{}).flat()||[];
+  for(const n of list){
+    const num=typeof n==='string'?n:n.number;
+    html+='<tr><td>'+esc(num)+'</td><td><button class="btn btn-s btn-sm" onclick="removeBlacklist(\''+esc(num)+'\')">Desbloquear</button></td></tr>';
+  }
+  html+='</table></div>';
+  document.getElementById('blacklist-list').innerHTML=html;
+}
+
+async function addBlacklist(){const num=document.getElementById('bl-number').value;if(!num)return;const r=await api('/api/blacklist',{method:'POST',body:JSON.stringify({number:num})});toast(r.success?'Bloqueado!':r.error);loadBlacklist()}
+async function removeBlacklist(num){const r=await api('/api/blacklist',{method:'DELETE',body:JSON.stringify({number:num})});toast(r.success?'Desbloqueado!':r.error);loadBlacklist()}
+
+// === TOOLS ===
+PAGES.tools=function(){
+  $('main').innerHTML=`
+    <h2>Ferramentas</h2>
+    <div class="tab-bar">
+      <a class="active" onclick="toolsTab('templates')">Templates</a>
+      <a onclick="toolsTab('schedules')">Agendamentos</a>
+      <a onclick="toolsTab('backup')">Backup</a>
+      <a onclick="toolsTab('upload')">Upload</a>
+    </div>
+    <div id="tools-content"></div>
+  `;
+  toolsTab('templates');
+};
+
+function toolsTab(tab){
+  document.querySelectorAll('.tab-bar a').forEach(a=>a.classList.remove('active'));
+  if(event&&event.target&&event.target.classList)event.target.classList.add('active');
+  else{document.querySelectorAll('.tab-bar a').forEach(a=>{if(a.textContent.trim().toLowerCase().includes(tab))a.classList.add('active')})}
+  const tabs={
+    templates:'<div class="card"><h3>Templates</h3><label>Nome</label><input id="tp-name"><label>Conteudo</label><textarea id="tp-content"></textarea><button class="btn btn-s" onclick="addTemplate()">Salvar</button></div><div id="templates-list"></div>',
+    schedules:'<div class="card"><h3>Agendamentos</h3><label>Nome</label><input id="sc-name"><label>Telefone</label><input id="sc-phone"><label>Mensagem</label><textarea id="sc-msg"></textarea><label>Horario (HH:MM)</label><input id="sc-time"><label>Dias (0=dom, separados por virgula)</label><input id="sc-days" value="0,1,2,3,4,5,6"><button class="btn btn-s" onclick="addSchedule()">Agendar</button></div><div id="schedules-list"></div>',
+    backup:'<div class="card"><button class="btn btn-p" onclick="downloadBackup()">Download Backup</button></div><div class="card"><h3>Restaurar</h3><label>Arquivo .db em base64</label><textarea id="restore-data"></textarea><button class="btn btn-w" onclick="restoreBackup()">Restaurar</button></div>',
+    upload:'<div class="card"><h3>Upload de Arquivo</h3><label>Nome do arquivo</label><input id="up-name"><label>Dados em Base64</label><textarea id="up-data"></textarea><button class="btn btn-p" onclick="uploadFile()">Upload</button></div>'
+  };
+  document.getElementById('tools-content').innerHTML=tabs[tab];
+  if(tab==='templates')loadTemplates();
+  if(tab==='schedules')loadSchedules();
+}
+
+async function loadTemplates(){
+  const d=await api('/api/templates');
+  if(!d)return;
+  let html='<div class="card"><table><tr><th>Nome</th><th>Acoes</th></tr>';
+  for(const t of d.templates||[]){
+    html+='<tr><td>'+esc(t.name)+'</td><td><button class="btn btn-d btn-sm" onclick="deleteTemplate(\''+esc(t.name)+'\')">Excluir</button></td></tr>';
+  }
+  html+='</table></div>';
+  document.getElementById('templates-list').innerHTML=html;
+}
+
+async function addTemplate(){const r=await api('/api/templates',{method:'POST',body:JSON.stringify({name:document.getElementById('tp-name').value,content:document.getElementById('tp-content').value})});toast(r.success?'Salvo!':r.error);loadTemplates()}
+async function deleteTemplate(name){const r=await api('/api/templates/'+name,{method:'DELETE'});toast(r.success?'Excluido!':r.error);loadTemplates()}
+
+async function loadSchedules(){
+  const d=await api('/api/schedules');
+  if(!d)return;
+  let html='<div class="card"><table><tr><th>Nome</th><th>Telefone</th><th>Horario</th><th>Ativo</th><th>Acoes</th></tr>';
+  for(const s of d.schedules||[]){
+    html+='<tr><td>'+esc(s.name)+'</td><td>'+esc(s.phone)+'</td><td>'+esc(s.time)+'</td><td>'+(s.enabled?'Sim':'Nao')+'</td><td><button class="btn btn-w btn-sm" onclick="toggleSchedule(\''+esc(s.id)+'\')">'+(!s.enabled?'Ativar':'Desativar')+'</button> <button class="btn btn-d btn-sm" onclick="deleteSchedule(\''+esc(s.id)+'\')">Excluir</button></td></tr>';
+  }
+  html+='</table></div>';
+  document.getElementById('schedules-list').innerHTML=html;
+}
+
+async function addSchedule(){const r=await api('/api/schedules',{method:'POST',body:JSON.stringify({name:document.getElementById('sc-name').value,phone:document.getElementById('sc-phone').value,message:document.getElementById('sc-msg').value,time:document.getElementById('sc-time').value,days:document.getElementById('sc-days').value.split(',').map(Number)})});toast(r.success?'Agendado!':r.error);loadSchedules()}
+async function toggleSchedule(id){const r=await api('/api/schedules/'+id+'/toggle',{method:'POST'});toast(r.success?'Alterado!':r.error);loadSchedules()}
+async function deleteSchedule(id){const r=await api('/api/schedules/'+id,{method:'DELETE'});toast(r.success?'Excluido!':r.error);loadSchedules()}
+
+async function downloadBackup(){const d=await api('/api/backup');if(!d)return;const a=document.createElement('a');a.href='data:application/octet-stream;base64,'+d.data;a.download='zap-backup-'+Date.now()+'.db';a.click();toast('Download iniciado','ok')}
+async function restoreBackup(){const r=await api('/api/backup/restore',{method:'POST',body:JSON.stringify({data:document.getElementById('restore-data').value})});toast(r.success?'Restaurado!':r.error)}
+async function uploadFile(){const r=await api('/api/upload',{method:'POST',body:JSON.stringify({fileName:document.getElementById('up-name').value,data:document.getElementById('up-data').value})});toast(r.success?'Upload feito!':r.error)}
+
+// === STATS ===
+PAGES.stats=function(){
+  $('main').innerHTML=`<h2>Estatisticas</h2>
+    <div class="flex" style="margin-bottom:12px"><button class="btn btn-p" onclick="loadStats()">Atualizar</button><button class="btn btn-s" onclick="exportStats()">Exportar CSV</button></div>
+    <div class="card"><canvas id="stats-chart" style="max-height:250px"></canvas></div>
+    <div id="stats-content"></div>`;
+  loadStats();
+};
+
+async function loadStats(){
+  const d=await api('/api/stats');
+  if(!d)return;
+  let html='<div class="grid">'+statBox('Uptime',d.uptimeFormatted)+statBox('Recebidas',d.totals.received)+statBox('Enviadas',d.totals.sent)+statBox('Midia',d.totals.media)+statBox('Arquivos',d.mediaFiles)+'</div>';
+  for(const c of d.clients||[]){
+    html+='<div class="card"><h3>'+c.id+' <span class="badge '+(c.connected?'badge-green':'badge-red')+'">'+(c.connected?'Online':'Offline')+'</span></h3>';
+    html+='<div class="grid">'+statBox('Recebidas',c.received)+statBox('Enviadas',c.sent)+statBox('Midia',c.media)+statBox('Msg Armaz.',c.storedMsgs)+statBox('Humano',c.humanCount)+statBox('Blacklist',c.blacklistCount)+'</div></div>';
+  }
+  document.getElementById('stats-content').innerHTML=html;
+  renderStatsChart(d);
+}
+
+function renderStatsChart(d){
+  const canvas=document.getElementById('stats-chart');
+  if(!canvas||!d.clients)return;
+  const labels=d.clients.map(c=>c.id);
+  const received=d.clients.map(c=>c.received);
+  const sent=d.clients.map(c=>c.sent);
+  const media=d.clients.map(c=>c.media);
+  if(typeof Chart==='undefined'){
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/chart.js';
+    s.onload=()=>{renderChart(labels,received,sent,media)};
+    document.head.appendChild(s);
+  } else {
+    renderChart(labels,received,sent,media);
+  }
+}
+
+let _chartInstance=null;
+function renderChart(labels,received,sent,media){
+  const canvas=document.getElementById('stats-chart');
+  if(!canvas)return;
+  if(_chartInstance)_chartInstance.destroy();
+  _chartInstance=new Chart(canvas,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Recebidas',data:received,backgroundColor:'#3b82f6'},
+      {label:'Enviadas',data:sent,backgroundColor:'#10b981'},
+      {label:'Midia',data:media,backgroundColor:'#f59e0b'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{labels:{color:'#e2e8f0'}}},scales:{x:{ticks:{color:'#94a3b8'}},y:{ticks:{color:'#94a3b8'}}}}
+  });
+}
+
+async function exportStats(){
+  const d=await api('/api/export/all?format=csv');
+  if(!d||d.error)return toast(d?.error||'Erro ao exportar','error');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(d);
+  a.download='stats-'+Date.now()+'.csv';
+  a.click();
+  toast('Download iniciado','ok');
+}
+
+// === LOG ===
+PAGES.log=function(){
+  $('main').innerHTML=`<h2>Log</h2><div class="flex" style="margin-bottom:12px"><button class="btn btn-p" onclick="loadLog()">Atualizar</button><button class="btn btn-d" onclick="clearLog()">Limpar</button></div><div id="log-content"></div>`;
+  loadLog();
+  REFRESH_INTERVALS.push(setInterval(loadLog,5000));
+};
+
+async function loadLog(){
+  const d=await api('/api/log?lines=200');
+  if(!d)return;
+  let html='<div class="card"><pre>';
+  for(const l of (d.lines||[]).reverse()){
+    const cls=l.includes('[ERROR]')?'log-error':l.includes('[WARN]')?'log-warn':l.includes('[DEBUG]')?'log-debug':'log-info';
+    html+='<div class="log-line '+cls+'">'+l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>';
+  }
+  html+='</pre></div>';
+  document.getElementById('log-content').innerHTML=html;
+}
+
+async function clearLog(){const r=await api('/api/log',{method:'DELETE'});toast(r.success?'Log limpo!':r.error);loadLog()}
+
+// === INIT ===
+(function(){
+  const saved=localStorage.getItem('last_page');
+  loadPage(saved||'dashboard');
+})();
+
+// Auto-configuracao da API key: o painel e servido pelo proprio servidor local
+// (127.0.0.1). Busca a key gerada automaticamente e guarda no localStorage
+// para autenticar as chamadas /api/* de forma transparente.
+(function bootstrap(){
+  try{
+    const conf=JSON.parse(localStorage.getItem('api_conf')||'{}');
+    if(conf.key)return;
+    fetch('/api/auth/bootstrap',{headers:{'Content-Type':'application/json'}})
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.apiKey){
+          localStorage.setItem('api_conf',JSON.stringify({key:d.apiKey,jwt:conf.jwt||''}));
+          location.reload();
+        }
+      })
+      .catch(()=>{});
+  }catch(ex){}
+})();
+
+function loadPage(page){
+  if(PAGES[page])PAGES[page]();
+  else go('dashboard');
+}
+
+// WS
+(function wsInit(){
+  try{
+    const proto=location.protocol==='https:'?'wss:':'ws:';
+    const conf=JSON.parse(localStorage.getItem('api_conf')||'{}');
+    const token=conf.jwt||conf.key||'';
+    WS=new WebSocket(proto+'//'+location.host+'/ws?token='+encodeURIComponent(token));
+    WS.onmessage=function(e){
+      try{const msg=JSON.parse(e.data);if(msg.event==='qr')refreshWA();}
+      catch(ex){}
+    };
+    WS.onclose=function(){setTimeout(wsInit,5000)};
+    WS.onerror=function(){};
+  }catch(ex){setTimeout(wsInit,10000)}
+})();
+</script>
+</body>
+</html>

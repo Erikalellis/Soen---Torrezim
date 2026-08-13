@@ -1,0 +1,243 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DDS: ZAP-API v3",
+    "description": "API completa para gerenciar WhatsApp Bot com suporte a multi-clientes, IA (OpenAI+Ollama), agendamentos, WebSocket, JWT, labels, grupos, contatos, S3, MQ e mais.\n\n## Autenticacao\n- Header `x-api-key` com valor de `API_KEY` no `.env`\n- Ou `Authorization: Bearer <token>` (JWT, 30d expiry)\n\n## WebSocket\nConecte em `ws://localhost:3000/ws?token=SUA_API_KEY` para eventos em tempo real:\n- `message` - nova mensagem\n- `qr` - QR Code\n- `status` - conexao\n- `presence` - presenca\n- `call` - chamada\n- `contacts.*` - eventos de contatos\n- `chats.*` - eventos de chats\n\n## Modos de operacao (config.json)\n- **single**: um numero, bot direto\n- **central**: um numero que redireciona para atendentes\n- **multi**: varios numeros independentes\n\n## Webhook Events\nA API dispara webhooks com assinatura HMAC-SHA256.\nEventos: `messages.upsert`, `connection.update`, `qrcode.updated`, `send.message`, `presence.update`, `groups.upsert`, `group-participants.update`, `call.upsert`, `labels.association`, `contacts.*`, `chats.*`, etc.\n\n## Log Rotation\nO arquivo `server.log` e reciclado automaticamente quando atinge 5MB.",
+    "version": "3.0.0",
+    "contact": { "name": "DDS: ZAP-API" }
+  },
+  "servers": [
+    { "url": "http://localhost:3000", "description": "Local" }
+  ],
+  "paths": {
+    "/ping": {
+      "get": { "summary": "Health check", "tags": ["Geral"], "responses": { "200": { "description": "Servidor online", "content": { "application/json": { "schema": { "type": "object", "properties": { "status": { "type": "string" }, "timestamp": { "type": "string" } } } } } } } }
+    },
+    "/status": {
+      "get": { "summary": "Status completo do sistema", "tags": ["Geral"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Status do sistema" } } }
+    },
+    "/qrcode": {
+      "get": { "summary": "QR Code de um cliente", "tags": ["Conexao"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" }, "description": "ID do cliente" } ], "responses": { "200": { "description": "QR Code em base64" } } }
+    },
+    "/api/server/status": {
+      "get": { "summary": "Status do servidor (PID, uptime, memoria)", "tags": ["Servidor"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Status do servidor", "content": { "application/json": { "schema": { "type": "object", "properties": { "running": { "type": "boolean" }, "pid": { "type": "integer" }, "uptime": { "type": "integer" }, "uptimeFormatted": { "type": "string" }, "startTime": { "type": "string" }, "nodeVersion": { "type": "string" }, "platform": { "type": "string" }, "memory": { "type": "object" } } } } } } } }
+    },
+    "/api/server/stop": {
+      "post": { "summary": "Parar o servidor", "tags": ["Servidor"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Servidor desligando" } } }
+    },
+    "/api/server/restart": {
+      "post": { "summary": "Reiniciar o servidor", "tags": ["Servidor"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Servidor reiniciando" } } }
+    },
+    "/api/auth/token": {
+      "post": { "summary": "Gerar token JWT para uma instancia", "tags": ["Autenticacao"], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "clientId": { "type": "string", "example": "principal" } }, "required": ["clientId"] } } } }, "responses": { "200": { "description": "Token JWT gerado" } } }
+    },
+    "/api/auth/check": {
+      "get": { "summary": "Verificar se token JWT e valido", "tags": ["Autenticacao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Token valido" } } }
+    },
+    "/api/client/{clientId}/reconnect": {
+      "post": { "summary": "Reconectar um cliente", "tags": ["Conexao"], "security": [{"apiKey": []}], "parameters": [ { "name": "clientId", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Cliente reconectando" } } }
+    },
+    "/api/send/text": {
+      "post": { "summary": "Enviar mensagem de texto", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number", "message"], "properties": { "number": { "type": "string", "example": "5511999999999" }, "message": { "type": "string", "example": "Ola!" }, "clientId": { "type": "string", "example": "principal" } } } } } }, "responses": { "200": { "description": "Mensagem enviada" } } }
+    },
+    "/api/send/media": {
+      "post": { "summary": "Enviar midia (URL ou arquivo base64)", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number"], "properties": { "number": { "type": "string" }, "url": { "type": "string" }, "base64": { "type": "string" }, "mimetype": { "type": "string" }, "fileName": { "type": "string" }, "caption": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Midia enviada" } } }
+    },
+    "/api/send/poll": {
+      "post": { "summary": "Criar enquete", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number", "question", "options"], "properties": { "number": { "type": "string" }, "question": { "type": "string" }, "options": { "type": "array", "items": { "type": "string" }, "minItems": 2 }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Enquete criada" } } }
+    },
+    "/api/send/ai": {
+      "post": { "summary": "Enviar mensagem com IA (OpenAI/Ollama)", "tags": ["Envio", "IA"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number", "prompt"], "properties": { "number": { "type": "string" }, "prompt": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Resposta gerada pela IA" } } }
+    },
+    "/api/send/location": {
+      "post": { "summary": "Enviar localizacao", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number", "latitude", "longitude"], "properties": { "number": { "type": "string" }, "latitude": { "type": "number" }, "longitude": { "type": "number" }, "title": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Localizacao enviada" } } }
+    },
+    "/api/send/contact": {
+      "post": { "summary": "Enviar contato (vCard)", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number", "contacts"], "properties": { "number": { "type": "string", "description": "Numero de destino" }, "contacts": { "type": "array", "items": { "type": "object", "required": ["number"], "properties": { "name": { "type": "string" }, "number": { "type": "string" } } } }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Contato enviado" } } }
+    },
+    "/api/react": {
+      "post": { "summary": "Reagir a uma mensagem", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["number", "messageId", "emoji"], "properties": { "number": { "type": "string" }, "messageId": { "type": "string" }, "emoji": { "type": "string", "example": "\u2764" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Reacao enviada" } } }
+    },
+    "/api/broadcast": {
+      "post": { "summary": "Enviar mensagem para varios numeros", "tags": ["Envio"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["numbers", "message"], "properties": { "numbers": { "type": "array", "items": { "type": "string" } }, "message": { "type": "string" }, "mediaUrl": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Resultados do broadcast" } } }
+    },
+    "/api/messages": {
+      "get": { "summary": "Listar mensagens recebidas", "tags": ["Mensagens"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } }, { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } }, { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } }, { "name": "from", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Lista de mensagens" } } },
+      "delete": { "summary": "Limpar historico de mensagens", "tags": ["Mensagens"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Historico limpo" } } }
+    },
+    "/api/messages/export": {
+      "get": { "summary": "Exportar mensagens em JSON", "tags": ["Mensagens"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Download JSON" } } }
+    },
+    "/api/conversations": {
+      "get": { "summary": "Listar conversas agrupadas por contato", "tags": ["Mensagens"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Lista de conversas" } } }
+    },
+    "/api/config": {
+      "get": { "summary": "Ler configuracao completa", "tags": ["Configuracao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Configuracao atual" } } },
+      "put": { "summary": "Salvar configuracao", "tags": ["Configuracao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } }, "responses": { "200": { "description": "Configuracao salva" } } }
+    },
+    "/api/config/webhook": {
+      "get": { "summary": "Ver webhook configurado", "tags": ["Configuracao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "URL e secret do webhook" } } },
+      "post": { "summary": "Definir webhook", "tags": ["Configuracao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "url": { "type": "string" } }, "required": ["url"] } } } }, "responses": { "200": { "description": "Webhook definido" } } },
+      "delete": { "summary": "Remover webhook", "tags": ["Configuracao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Webhook removido" } } }
+    },
+    "/api/config/ai": {
+      "get": { "summary": "Ver configuracao de IA", "tags": ["Configuracao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Config de IA" } } },
+      "put": { "summary": "Salvar configuracao de IA (provider, model, keys)", "tags": ["Configuracao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "provider": { "type": "string", "enum": ["openai", "ollama"] }, "model": { "type": "string" }, "apiKey": { "type": "string" }, "apiUrl": { "type": "string" } } } } } }, "responses": { "200": { "description": "IA atualizada" } } }
+    },
+    "/api/config/proxy": {
+      "get": { "summary": "Ver proxy configurado", "tags": ["Configuracao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Proxy config" } } },
+      "put": { "summary": "Definir proxy global", "tags": ["Configuracao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "proxy": { "type": "string", "example": "http://user:pass@host:8080" } } } } } }, "responses": { "200": { "description": "Proxy atualizado" } } }
+    },
+    "/api/config/mq": {
+      "get": { "summary": "Ver configuracao de Message Queue", "tags": ["Configuracao"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Status do MQ" } } }
+    },
+    "/api/webhook/events": {
+      "get": { "summary": "Log de eventos disparados pelo webhook", "tags": ["Configuracao"], "security": [{"apiKey": []}], "parameters": [ { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } } ], "responses": { "200": { "description": "Lista de eventos" } } }
+    },
+    "/api/bot/toggle": {
+      "post": { "summary": "Ligar/desligar o bot", "tags": ["Configuracao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "enabled": { "type": "boolean" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Bot toggled" } } }
+    },
+    "/api/vacation": {
+      "post": { "summary": "Ativar/desativar modo ferias", "tags": ["Configuracao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "enabled": { "type": "boolean" }, "message": { "type": "string" } } } } } }, "responses": { "200": { "description": "Modo ferias atualizado" } } }
+    },
+    "/api/contacts": {
+      "get": { "summary": "Listar contatos do WhatsApp", "tags": ["Contatos"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Lista de contatos" } } }
+    },
+    "/api/contacts/{number}": {
+      "get": { "summary": "Buscar contato especifico", "tags": ["Contatos"], "security": [{"apiKey": []}], "parameters": [ { "name": "number", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Dados do contato" } } }
+    },
+    "/api/contacts/block": {
+      "post": { "summary": "Bloquear contato", "tags": ["Contatos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "number": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["number"] } } } }, "responses": { "200": { "description": "Contato bloqueado" } } }
+    },
+    "/api/contacts/unblock": {
+      "post": { "summary": "Desbloquear contato", "tags": ["Contatos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "number": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["number"] } } } }, "responses": { "200": { "description": "Contato desbloqueado" } } }
+    },
+    "/api/groups": {
+      "get": { "summary": "Listar grupos do WhatsApp", "tags": ["Grupos"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Lista de grupos" } } }
+    },
+    "/api/groups/{groupId}": {
+      "get": { "summary": "Detalhes de um grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "parameters": [ { "name": "groupId", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Detalhes do grupo" } } }
+    },
+    "/api/groups/create": {
+      "post": { "summary": "Criar grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" }, "participants": { "type": "array", "items": { "type": "string" } }, "clientId": { "type": "string" } }, "required": ["name", "participants"] } } } }, "responses": { "200": { "description": "Grupo criado" } } }
+    },
+    "/api/groups/leave": {
+      "post": { "summary": "Sair de um grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["groupId"] } } } }, "responses": { "200": { "description": "Saiu do grupo" } } }
+    },
+    "/api/groups/add": {
+      "post": { "summary": "Adicionar participante(s) ao grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "participants": { "type": "array", "items": { "type": "string" } }, "clientId": { "type": "string" } }, "required": ["groupId", "participants"] } } } }, "responses": { "200": { "description": "Participantes adicionados" } } }
+    },
+    "/api/groups/remove": {
+      "post": { "summary": "Remover participante do grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "participants": { "type": "array", "items": { "type": "string" } }, "clientId": { "type": "string" } }, "required": ["groupId", "participants"] } } } }, "responses": { "200": { "description": "Participantes removidos" } } }
+    },
+    "/api/groups/promote": {
+      "post": { "summary": "Promover participante a admin", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "participants": { "type": "array", "items": { "type": "string" } }, "clientId": { "type": "string" } }, "required": ["groupId", "participants"] } } } }, "responses": { "200": { "description": "Participantes promovidos" } } }
+    },
+    "/api/groups/demote": {
+      "post": { "summary": "Rebaixar admin a participante", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "participants": { "type": "array", "items": { "type": "string" } }, "clientId": { "type": "string" } }, "required": ["groupId", "participants"] } } } }, "responses": { "200": { "description": "Participantes rebaixados" } } }
+    },
+    "/api/groups/setSubject": {
+      "post": { "summary": "Alterar nome do grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "subject": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["groupId", "subject"] } } } }, "responses": { "200": { "description": "Nome atualizado" } } }
+    },
+    "/api/groups/setDescription": {
+      "post": { "summary": "Alterar descricao do grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "groupId": { "type": "string" }, "description": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["groupId", "description"] } } } }, "responses": { "200": { "description": "Descricao atualizada" } } }
+    },
+    "/api/groups/send": {
+      "post": { "summary": "Enviar mensagem para um grupo", "tags": ["Grupos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["groupId", "message"], "properties": { "groupId": { "type": "string" }, "message": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Mensagem enviada" } } }
+    },
+    "/api/labels": {
+      "get": { "summary": "Listar labels", "tags": ["Labels"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Lista de labels" } } },
+      "post": { "summary": "Criar label", "tags": ["Labels"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "color": { "type": "string", "example": "#FF0000" } } } } } }, "responses": { "200": { "description": "Label criada" } } }
+    },
+    "/api/labels/{id}": {
+      "put": { "summary": "Atualizar label (nome/cor)", "tags": ["Labels"], "security": [{"apiKey": []}], "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" }, "color": { "type": "string", "example": "#FF0000" }, "clientId": { "type": "string" } }, "required": ["name"] } } } }, "responses": { "200": { "description": "Label atualizada" } } },
+      "delete": { "summary": "Excluir label", "tags": ["Labels"], "security": [{"apiKey": []}], "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Label excluida" } } }
+    },
+    "/api/labels/associate": {
+      "post": { "summary": "Associar label a um chat/contato", "tags": ["Labels"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["labelId", "targetId"], "properties": { "labelId": { "type": "string" }, "targetId": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Label associada" } } },
+      "delete": { "summary": "Desassociar label de um chat/contato", "tags": ["Labels"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["labelId", "targetId"], "properties": { "labelId": { "type": "string" }, "targetId": { "type": "string" }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Label desassociada" } } }
+    },
+    "/api/presence/{number}": {
+      "get": { "summary": "Ver status de presenca de um contato", "tags": ["Presenca"], "security": [{"apiKey": []}], "parameters": [ { "name": "number", "in": "path", "required": true, "schema": { "type": "string" } }, { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Status de presenca" } } }
+    },
+    "/api/presence/sendPresence": {
+      "post": { "summary": "Enviar status de presenca (online/offline/composing)", "tags": ["Presenca"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["type"], "properties": { "number": { "type": "string", "description": "Numero alvo (vazio = broadcast)" }, "type": { "type": "string", "enum": ["online", "offline", "composing", "recording"] }, "clientId": { "type": "string" } } } } } }, "responses": { "200": { "description": "Presenca enviada" } } }
+    },
+    "/api/calls": {
+      "get": { "summary": "Listar chamadas recebidas", "tags": ["Chamadas"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } }, { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } } ], "responses": { "200": { "description": "Lista de chamadas" } } }
+    },
+    "/api/blacklist": {
+      "get": { "summary": "Listar blacklist", "tags": ["Moderacao"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Blacklist" } } },
+      "post": { "summary": "Bloquear numero na blacklist", "tags": ["Moderacao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "number": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["number"] } } } }, "responses": { "200": { "description": "Bloqueado" } } },
+      "delete": { "summary": "Desbloquear numero da blacklist", "tags": ["Moderacao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "number": { "type": "string" }, "clientId": { "type": "string" } }, "required": ["number"] } } } }, "responses": { "200": { "description": "Desbloqueado" } } }
+    },
+    "/api/human": {
+      "get": { "summary": "Listar contatos em modo humano", "tags": ["Moderacao"], "security": [{"apiKey": []}], "parameters": [ { "name": "client", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Lista de contatos em modo humano" } } },
+      "post": { "summary": "Ativar/desativar modo humano", "tags": ["Moderacao"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "number": { "type": "string" }, "action": { "type": "string", "enum": ["enable", "disable"] }, "clientId": { "type": "string" } }, "required": ["number", "action"] } } } }, "responses": { "200": { "description": "Modo humano atualizado" } } }
+    },
+    "/api/templates": {
+      "get": { "summary": "Listar templates de mensagem", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Lista de templates" } } },
+      "post": { "summary": "Criar template", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" }, "content": { "type": "string" } }, "required": ["name", "content"] } } } }, "responses": { "200": { "description": "Template criado" } } },
+      "delete": { "summary": "Deletar template por nome", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"] } } } }, "responses": { "200": { "description": "Template deletado" } } }
+    },
+    "/api/templates/{name}": {
+      "delete": { "summary": "Deletar template por nome (path param)", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "parameters": [ { "name": "name", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Template deletado" } } }
+    },
+    "/api/schedules": {
+      "get": { "summary": "Listar agendamentos", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Lista de agendamentos" } } },
+      "post": { "summary": "Criar agendamento", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "name": { "type": "string" }, "phone": { "type": "string" }, "message": { "type": "string" }, "time": { "type": "string", "example": "09:00" }, "days": { "type": "array", "items": { "type": "integer" }, "description": "Dias da semana (0=dom, 6=sab)" }, "clientId": { "type": "string" } }, "required": ["phone", "message", "time"] } } } }, "responses": { "200": { "description": "Agendamento criado" } } },
+      "delete": { "summary": "Deletar agendamento por id", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "string" } }, "required": ["id"] } } } }, "responses": { "200": { "description": "Deletado" } } },
+      "patch": { "summary": "Ativar/desativar agendamento", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "string" }, "enabled": { "type": "boolean" } }, "required": ["id"] } } } }, "responses": { "200": { "description": "Atualizado" } } }
+    },
+    "/api/schedules/{id}": {
+      "delete": { "summary": "Deletar agendamento por ID (path param)", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Deletado" } } }
+    },
+    "/api/schedules/{id}/toggle": {
+      "post": { "summary": "Ativar/desativar agendamento rapido", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Status invertido" } } }
+    },
+    "/api/log": {
+      "get": { "summary": "Obter logs do servidor", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "parameters": [ { "name": "lines", "in": "query", "schema": { "type": "integer", "default": 50 } } ], "responses": { "200": { "description": "Logs" } } },
+      "delete": { "summary": "Limpar logs", "tags": ["Ferramentas"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Logs limpos" } } }
+    },
+    "/api/upload": {
+      "post": { "summary": "Upload de arquivo (base64)", "tags": ["Arquivos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["fileName", "data"], "properties": { "fileName": { "type": "string" }, "data": { "type": "string", "description": "Arquivo em base64" }, "mimetype": { "type": "string" } } } } } }, "responses": { "200": { "description": "Arquivo salvo" } } }
+    },
+    "/api/media": {
+      "get": { "summary": "Listar arquivos de midia", "tags": ["Arquivos"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Lista de arquivos na pasta media/" } } }
+    },
+    "/api/media/{fileName}": {
+      "get": { "summary": "Baixar arquivo de midia", "tags": ["Arquivos"], "security": [{"apiKey": []}], "parameters": [ { "name": "fileName", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Arquivo binario" } } }
+    },
+    "/api/backup": {
+      "get": { "summary": "Download do banco SQLite", "tags": ["Arquivos"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Arquivo .db" } } }
+    },
+    "/api/backup/restore": {
+      "post": { "summary": "Restaurar banco SQLite", "tags": ["Arquivos"], "security": [{"apiKey": []}], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "required": ["data"], "properties": { "data": { "type": "string", "description": "Base64 do arquivo .db" } } } } } }, "responses": { "200": { "description": "Banco restaurado" } } }
+    },
+    "/api/s3/status": {
+      "get": { "summary": "Status da integracao S3/MinIO", "tags": ["Armazenamento"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Status do S3" } } }
+    },
+    "/api/s3/files": {
+      "get": { "summary": "Listar arquivos no S3/MinIO", "tags": ["Armazenamento"], "security": [{"apiKey": []}], "parameters": [ { "name": "prefix", "in": "query", "schema": { "type": "string" } } ], "responses": { "200": { "description": "Lista de arquivos" } } }
+    },
+    "/api/stats": {
+      "get": { "summary": "Estatisticas completas do sistema", "tags": ["Geral"], "security": [{"apiKey": []}], "responses": { "200": { "description": "Estatisticas consolidadas" } } }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "Chave configurada em API_KEY no .env"
+      },
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT gerado via POST /api/auth/token"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+# Binarios e dados locais (nao versionados)
+node_modules/
+node/
+ChromiumPortable/
+__pycache__/
+sessions/
+data/
+*.log
+.env
