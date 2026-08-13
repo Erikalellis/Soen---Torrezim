@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Restore + build
-        working-directory: Soen - Torrezim
         run: |
           dotnet restore "Soen - Torrezim.csproj"
           dotnet build "Soen - Torrezim.csproj" -c Release --no-restore -nologo
@@ -24,7 +23,7 @@ jobs:
       - name: Empacotar app (zip)
         shell: pwsh
         run: |
-          $bin = "Soen - Torrezim\bin\Release"
+          $bin = "bin\Release"
           $stg = Join-Path $env:RUNNER_TEMP "app"
           New-Item -ItemType Directory -Path $stg -Force | Out-Null
           foreach ($f in @("Soen - Torrezim.exe","Soen - Torrezim.exe.config","System.Data.SQLite.dll","System.Resources.Extensions.dll","System.Buffers.dll","System.Memory.dll","System.Numerics.Vectors.dll","System.Runtime.CompilerServices.Unsafe.dll")) {
